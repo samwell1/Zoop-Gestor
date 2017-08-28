@@ -26,4 +26,43 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
+	
+	//Relacionamento com os niveis de permissão.
+	public function roles()
+	{
+		return $this
+		->belongsToMany('App\Role')
+		->withTimestamps();
+	}
+	
+	public function authorizeRoles($roles)
+{
+  if ($this->hasAnyRole($roles)) {
+    return true;
+  }
+  abort(404, 'Acesso não autorizado.');
 }
+public function hasAnyRole($roles)
+{
+  if (is_array($roles)) {
+    foreach ($roles as $role) {
+      if ($this->hasRole($role)) {
+        return true;
+      }
+    }
+  } else {
+    if ($this->hasRole($roles)) {
+      return true;
+    }
+  }
+  return false;
+}
+public function hasRole($role)
+{
+  if ($this->roles()->where('name', $role)->first()) {
+    return true;
+  }
+  return false;
+}
+}
+

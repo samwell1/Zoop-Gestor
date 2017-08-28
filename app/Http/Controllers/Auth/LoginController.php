@@ -32,6 +32,25 @@ class LoginController extends Controller
      *
      * @return void
      */
+	 /**
+ * Check user's role and redirect user based on their role
+ * @return 
+ */
+public function authenticated()
+{
+    if(auth()->user()->hasRole('admin'))
+    {
+        return redirect()->route('home');
+    } 
+	
+	if(auth()->user()->hasRole('repositor'))
+	{
+	return redirect()->route('user_home');
+	}
+
+    //return redirect('/user/dashboard');
+}
+
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
