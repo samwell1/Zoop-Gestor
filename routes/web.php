@@ -32,6 +32,10 @@
 	
 	Route::get('/admin/pedido/{id}', 'GetsController@infopedido');
 	
+	Route::get('/nf', 'GetsController@nf')->name('nf');
+	
+	
+	
 	//Fim
 	
 	//Inicio GET's REPOSITOR

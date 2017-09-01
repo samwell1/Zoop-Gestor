@@ -22,7 +22,7 @@
 						<th>Ações</th>
 					</thead>
 					<tbody>
-					@foreach($produtos as $produto)
+						@foreach($produtos as $produto)
 						<tr>
 							<td>{{$produto->codigo}}</td>
 							<td>{{$produto->nome}} - {{$produto->modelo}}</td>
@@ -47,13 +47,13 @@
 </div>
 
 
-							@endsection
-							
-							@section('post-script')
-							<script>
-							$(".delete").on("submit", function(){
-							return confirm("Tem certeza que deseja deletar este item?");
-							});
-							</script>
-							
-							@endsection									
+@endsection
+
+@section('post-script')
+<script>
+	$(".delete").on("submit", function(){
+		return confirm("Tem certeza que deseja deletar este item?");
+	});
+</script>
+
+@endsection									
