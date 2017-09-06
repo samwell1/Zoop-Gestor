@@ -24,6 +24,7 @@
 						<th>Região/Bairro</th>
 						<th>Cidade</th>
 						<th>Estado</th>
+						<th>Cadastrado por</th>
 						<th>Ações</th>
 					</thead>
 					<tbody>
@@ -38,10 +39,11 @@
 						@foreach($pontosvenda as $pontovenda)
 						<tr>
 							<td>{{$pontovenda->nome}}</td>
-							<td>{{$pontovenda->endereco}}</td>
+							<td>{{$pontovenda->endereco}}, {{$pontovenda->numero}}</td>
 							<td>{{$pontovenda->regiao}}</td>
 							<td>{{$pontovenda->cidade}}</td>
 							<td>{{$pontovenda->estado}}</td>
+							<td>{{$pontovenda->repositor}}</td>
 							<td class="td-actions text-right">
 								<button type="button" rel="tooltip" title="Ver" class="btn btn-info btn-simple btn-xs" data-toggle="modal" data-target="#modal{{$pontovenda->id}}"> 
 									<i class="fa fa-eye"></i>

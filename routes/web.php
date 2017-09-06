@@ -41,7 +41,7 @@
 	//Inicio GET's REPOSITOR
 	Route::get('/user/home', 'UserGetController@index')->name('user_home');
 	
-	Route::get('/user/pdv', 'UserGetController@pontosdeVenda')->name('user_pdv');
+	Route::get('/user/pdv', 'UserGetController@pdv')->name('user_pdv');
 	//Fim
 	
 	//Inicio CRUD Produto
@@ -64,10 +64,14 @@
 	//Route::post('/estoque-pdv', 'PostsController@estoquePdv')->name('estoque-pdv');
 	//Fim
 	
-	//Inicio POST's
+	//Inicio POST's ADMIN
 	Route::post('/estoque-pdv', 'PostsController@estoqueRepositor')->name('estoque-pdv');
 	
 	Route::post('/cadastrar_pedido', 'PostsController@cadastrarPedido')->name('cadastrar_pedido');
+	//Fim
+	
+	//Inicio POST's USER
+	Route::post('/user_cadastrar_pdv', 'UserPostController@cadastrarPdv')->name('user_cadastrar_pdv');
 	//Fim
 	
 	//Inicio Funcoes

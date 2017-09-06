@@ -21,6 +21,14 @@ class CreateProdutosTable extends Migration
 			$table->integer('quantidade');
 			$table->float('preco');
             $table->string('codigo')->unique();
+			$table->string('cean')->nullable();
+			$table->string('ncm')->nullable();
+			$table->string('extipi')->nullable();
+			$table->string('cfop')->nullable();
+			$table->string('ceantrib')->nullable();
+			$table->string('utrib')->nullable();
+			$table->string('qtrib')->nullable();
+			$table->string('vuntrib')->nullable();
 			$table->integer('status');
             $table->timestamps();
         });

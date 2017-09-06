@@ -184,7 +184,7 @@
 		if ($request ['role_repositor']) {
 			$user->roles ()->attach ( Role::where ( 'name', 'repositor' )->first () );
 		}
-		return redirect('usuarios')->with('status', 'Usuário alterado com sucesso!');
+		return redirect('admin/usuarios')->with('status', 'Usuário alterado com sucesso!');
 	}
 		
 		

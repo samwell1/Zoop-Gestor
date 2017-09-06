@@ -70,7 +70,7 @@
 			]);
 			$user
 			->roles()
-			->attach(Role::where('name', 'admin')->first());
+			->attach(Role::where('name', 'repositor')->first());
 			return $user;
 			
 		}
