@@ -8,6 +8,7 @@
 	use App\Helpers\HeaderFunctions;
 	
 	use NFePHP\NFe\Tools;
+	use NFePHP\NFe\Complements;
 	use NFePHP\Common\Certificate;
 	use NFePHP\Common\Soap\SoapCurl;
 	use NFePHP\NFe\Make;
@@ -30,49 +31,54 @@
 		return $valorFormatado;
 	}
 	
-	function nfe($idPontoVenda,$aP){
+	function nfe($idPedido){
+	$pedido = Pedido::where('pedidos.id', $idPedido)->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('ponto_vendas','pedidos.id_pdv','=','ponto_vendas.id')->select('pedido_produtos.qtde as qtde','pedidos.*','ponto_vendas.id as id_pontovenda')->first();
+	//$produtos = Pedido::where('pedidos.id', $idPedido)->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->select('produtos.nome as nome','produtos.modelo as modelo','produtos.codigo as codigo','pedido_produtos.qtde as qtde','produtos.id as id_produto','produtos.preco as preco')->get();
+	$produtos = DB::table('pedido_produtos')->where('pedido_produtos.id_pedido', $idPedido)->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->select('produtos.nome as nome','produtos.modelo as modelo','produtos.codigo as codigo','pedido_produtos.qtde as qtde','produtos.id as id_produto','produtos.preco as preco')->get();
 		$nfe = Make::v310();
 		
 		$nfe->taginfNFe('31110219570803000100550030000006821169793597');
-		
+		$serie = 18;
 		//$nfe->tagide($cUF, $cNF, $natOp, $indPag, $mod, $serie, $nNF, $dhEmi, $dhSaiEnt, $tpNF, $idDest, $cMunFG, $tpImp, $tpEmis, $cDV, $tpAmb, $finNFe, $indFinal, $indPres, $procEmi, $verProc, $dhCont, $xJust);
 		
-		$nfe->tagide(52,00000010,'Venda de Produto',1,55,1,10,date("Y-m-d\TH:i:sP"),date("Y-m-d\TH:i:sP"),1,1,'5200258',1,1,2,1,1,1,9,0,'4.0.43','','');
+		$nfe->tagide(41,00000010,'Consignação de Produto',1,55,1,$serie,date("Y-m-d\TH:i:sP"),date("Y-m-d\TH:i:sP"),1,1,'4106902',1,1,2,2,1,1,9,0,'4.0.43','','');
 		
-		$CNPJ = '69.316.888/0001-72';
+		$CNPJ = '26849873000167';
 		$CPF = ''; // Utilizado para CPF na nota
 		$xNome = 'ZOOP';
 		$xFant = 'ZOOP BR ';
-		$IE = '123456';
+		$IE = '9073949480';
 		$IEST = '';
 		$IM = '';
-		$CNAE = '';
+		$CNAE = '4759899';//Necessário
 		$CRT = 1;
 		
 		$nfe->tagemit($CNPJ, $CPF, $xNome, $xFant, $IE, $IEST, $IM, $CNAE, $CRT);
 		
 		//endereÃ§o do emitente
-		$xLgr = 'Av. Sete de Setembro';
-		$nro = '3432';
-		$xCpl = 'Qd. 38 Lt. 4,5 e 34';
-		$xBairro = 'Rebouçasº';
+		$xLgr = 'RUA BRASILIO ITIBERE';
+		$nro = '2023';
+		$xCpl = 'AP 102';
+		$xBairro = 'REBOUCAS';
 		$cMun = '4106902';
 		$xMun = 'Curitiba';
 		$UF = 'PR';
-		$CEP = '80230-090';
+		$CEP = '80230050';
 		$cPais = '1058';
-		$xPais = 'Brasil';
+		$xPais = 'BRASIL';
 		$fone = '34020106';
 		$nfe->tagenderEmit($xLgr, $nro, $xCpl, $xBairro, $cMun, $xMun, $UF, $CEP, $cPais, $xPais, $fone);
 		
-		$pontoVenda = PontoVenda::find($idPontoVenda);
+		
+		$pontoVenda = PontoVenda::find($pedido->id_pontovenda);
 		
 		//destinatÃ¡rio
 		$CNPJ = $pontoVenda->cnpj;
 		$CPF = '';
 		$idEstrangeiro = '';
-		$xNome = $pontoVenda->nome;
+		$xNome = 'Joao Farmacionas';
 		$indIEDest = '1';
+		//$IE = '9065819144';
 		$IE = $pontoVenda->ie;
 		$ISUF = $pontoVenda->isuf;
 		$IM = $pontoVenda->im;
@@ -122,9 +128,36 @@
 			'xPed' => '16',
 			'nItemPed' => '1',
 		'nFCI' => '');*/
-		$nItem = 1;
+		$ItemPed = 1;
+		$vTotalProd = 0;
 		//produtos 2        
-		foreach ($aP as $prod) {
+		foreach ($produtos as $prod) {
+			$produto = Produto::find($prod->id_produto);
+			$nItem = $ItemPed;
+			$cProd = $produto->codigo;
+			$cEAN = '97899072659522';
+			$xProd = $produto->nome.' - '.$produto->modelo;
+			$NCM = '22030000';
+			$EXTIPI = '';
+			$CFOP = '5101';
+			$uCom = 'Un';
+			$qCom = $prod->qtde;
+			$vUnCom = $produto->preco;
+			$vProd = $produto->preco * $prod->qtde;
+			$cEANTrib = '';
+			$uTrib = '';
+			$qTrib = '120';
+			$vUnTrib = '7.00';
+			$vFrete = '';
+			$vSeg = '';
+			$vDesc = '';
+			$vOutro = '';
+			$indTot = '1';
+			$xPed = '15';
+			$nItemPed = strval($nItem);
+			$nFCI = '';
+			
+		/*
 			$produto = Produto::find(1);
 			$nItem = 1;
 			$cProd = $produto->codigo;
@@ -149,10 +182,10 @@
 			$xPed = '15';
 			$nItemPed = strval($nItem);
 			$nFCI = '';
+			*/
 			
 			$resp = $nfe->tagprod($nItem, $cProd, $cEAN, $xProd, $NCM, $EXTIPI, $CFOP, $uCom, $qCom, $vUnCom, $vProd, $cEANTrib, $uTrib, $qTrib, $vUnTrib, $vFrete, $vSeg, $vDesc, $vOutro, $indTot, $xPed, $nItemPed, $nFCI);
-			$nItem++;
-		}
+		
 		
 		/*foreach ($aP as $prod) {
 			$produto = Produto::find(1);
@@ -186,24 +219,24 @@
 		/*$nItem = 1; //produtos 1
 			$vDesc = 'Barril 30 Litros Chopp Tipo Pilsen - Pedido NÂº15';
 		$resp = $nfe->taginfAdProd($nItem, $vDesc);*/
-		$nItem = 2; //produtos 2
+		$nItem = $ItemPed; //produtos 2
 		$vDesc = 'Caixa com 1000 unidades';
 		$nfe->taginfAdProd($nItem, $vDesc);
 		
 		//Impostos
-		$nItem = 1; //produtos 1
+		$nItem = $ItemPed; //produtos 1
 		$vTotTrib = '50.40'; // 226.80 ICMS + 51.50 ICMSST + 50.40 IPI + 39.36 PIS + 81.84 CONFIS
 		$nfe->tagimposto($nItem, $vTotTrib);
 		
 		//ICMS - Imposto sobre CirculaÃ§Ã£o de Mercadorias e ServiÃ§os
-		$nItem = 1; //produtos 1
+		$nItem = $ItemPed; //produtos 1
 		$orig = '0';
 		$cst = '102'; // Tributado Integralmente
 		$modBC = '3';
 		$pRedBC = '';
-		$vBC = '840.00'; // = $qTrib * $vUnTrib
+		$vBC = $qTrib * $vUnTrib; // = $qTrib * $vUnTrib
 		$pICMS = '27.00'; // AlÃ­quota do Estado de GO p/ 'NCM 2203.00.00 - Cervejas de Malte, inclusive Chope'
-		$vICMS = '226.80'; // = $vBC * ( $pICMS / 100 )
+		$vICMS = $vBC * ( $pICMS / 100 ); // = $vBC * ( $pICMS / 100 )
 		$vICMSDeson = '';
 		$motDesICMS = '';
 		$modBCST = '';
@@ -233,22 +266,22 @@
 		//$resp = $nfe->tagICMSSN($nItem, $orig, $csosn, $modBC, $vBC, $pRedBC, $pICMS, $vICMS, $pCredSN, $vCredICMSSN, $modBCST, $pMVAST, $pRedBCST, $vBCST, $pICMSST, $vICMSST, $vBCSTRet, $vICMSSTRet);
 		
 		//IPI - Imposto sobre Produto Industrializado
-		$nItem = 1; //produtos 1
+		$nItem = $ItemPed; //produtos 1
 		$cst = '50'; // 50 - SaÃ­da Tributada (CÃ³digo da SituaÃ§Ã£o TributÃ¡ria)
 		$clEnq = '';
 		$cnpjProd = '';
 		$cSelo = '';
 		$qSelo = '';
 		$cEnq = '999';
-		$vBC = '840.00';
+		$vBC = $vBC ;
 		$pIPI = '6.00'; //Calculo por alÃ­quota - 6% AlÃ­quota GO.
 		$qUnid = '';
 		$vUnid = '';
-		$vIPI = '50.40'; // = $vBC * ( $pIPI / 100 )
+		$vIPI = $vBC * ( $pIPI / 100 ); // = $vBC * ( $pIPI / 100 )
 		$nfe->tagIPI($nItem, $cst, $clEnq, $cnpjProd, $cSelo, $qSelo, $cEnq, $vBC, $pIPI, $qUnid, $vUnid, $vIPI);
 		
 		//PIS - Programa de IntegraÃ§Ã£o Social
-		$nItem = 1; //produtos 1
+		$nItem = $ItemPed; //produtos 1
 		$cst = '07'; //OperaÃ§Ã£o TributÃ¡vel (base de cÃ¡lculo = quantidade vendida x alÃ­quota por unidade de produto)
 		$vBC = ''; 
 		$pPIS = '';
@@ -261,7 +294,7 @@
 		//$resp = $nfe->tagPISST($nItem, $vBC, $pPIS, $qBCProd, $vAliqProd, $vPIS);
 		
 		//COFINS - ContribuiÃ§Ã£o para o Financiamento da Seguridade Social
-		$nItem = 1; //produtos 1
+		$nItem = $ItemPed; //produtos 1
 		$cst = '07'; //OperaÃ§Ã£o TributÃ¡vel (base de cÃ¡lculo = quantidade vendida x alÃ­quota por unidade de produto)
 		$vBC = '';
 		$pCOFINS = '';
@@ -284,7 +317,9 @@
 		
 		//retTrib
 		//$resp = $nfe->tagretTrib($vRetPIS, $vRetCOFINS, $vRetCSLL, $vBCIRRF, $vIRRF, $vBCRetPrev, $vRetPrev);
-		
+		$ItemPed++;
+		$vTotalProd +=  $vProd;
+		}
 		//InicializaÃ§Ã£o de vÃ¡riaveis nÃ£o declaradas...
 		$vII = isset($vII) ? $vII : 0;
 		$vIPI = isset($vIPI) ? $vIPI : 0;
@@ -302,7 +337,7 @@
 		$vICMSDeson = '0.00';
 		$vBCST = '0';
 		$vST = '0';
-		$vProd = '840.00';
+		$vProd = $vTotalProd;
 		$vFrete = '0.00';
 		$vSeg = '0.00';
 		$vDesc = '0.00';
@@ -424,14 +459,14 @@
 		
 		$xml = $nfe->getXML();
 		
-		Storage::put('file.xml', $xml);
+		
 		
 		if (empty($xml)) {
 			//existem falhas
 			print_r($nfe->erros);
 			
 		}	
-		$xml = Storage::get('file.xml');
+		
 		
 		$config= ["atualizacao"=>"2017-09-06 10:10:20",
 		"tpAmb"=>2,
@@ -451,55 +486,130 @@
 		"proxyPass"=>""
 		]
 		];
-		$configJson = json_encode($config);
 		
-		$xmlAssinada = assinaNfe($xml,$configJson);
+		//Array de configuração dos dados do emitente
+	    $configJson = json_encode($config);
+		//Certificado Digital para emissão das NFe's
+		$certificado = Storage::get('V3S.pfx');
+		//Senha do Certificado Digital para a emissão das NFe's
+		$senha = '12345678';
+		//Ambiente de Emissão: PRODUÇÃO = 1; HOMOLOGAÇÃO = 2;
+		$tpAmb = '2';
 		
-		$xmlEnviada = enviaNfe($xmlAssinada,$configJson);
+		//Assina XML (NFe)
+		$xmlAssinada = assinaNfe($xml,$configJson,$certificado,$senha);
+		$data = date("Y-m-d");
+		Storage::put('nfe/'.$pontoVenda->nome.'/nfeAssinada/nfe'.$serie.$data.'.xml', $xmlAssinada);
+		
+		danfe($xml);
+
+        		//Envia XML (NFe) para a SEFAZ e retorna o Status do XML
+	//	$recibo = enviaNfe($xmlAssinada,$configJson,$certificado,$senha,$tpAmb);
+		
+	//	Storage::put('recibo.xml', $recibo);
+		
+       // $recibo = Storage::get('recibo.xml');
+       
+		//Consulta Status do Recibo da XML, caso esteja tudo OK! é retornado o //protocolo para adicionar a XML
+	//	$protocolo = consultaRec($recibo, $configJson,$certificado,$senha,$tpAmb);
+	
+	// Storage::put('protocolo.xml', $protocolo);
+	
+//	    $nfe = Storage::get('nfe.xml');
+
+//	   $protocolo = Storage::get('protocolo.xml');
+
+//	   $nfe = addProt($nfe, $protocolo, $configJson,$certificado,$senha);
+
+	  //  $xmlValida = validaNfe($nfe,$configJson,$certificado,$senha);
+	   
 		//Imprimir DANFE
-		//danfe($xmlAssinada);
-		
-		
-		
+//		danfe($nfe);
+
 	}
 	
-	function assinaNfe($xml,$configJson)
+	function assinaNfe($xml,$configJson,$certificado,$senha)
 	{
-		
-		$content = Storage::get('V3S.pfx');
-		$password = '12345678';
 		try {
-			$tools = new Tools($configJson, Certificate::readPfx($content, $password));
-			$xml = $tools->signNFe($xml);
-			Storage::put('file.xml', $xml);
+			$tools = new Tools($configJson, Certificate::readPfx($certificado, $senha));
+			$xmlAssinada = $tools->signNFe($xml);
+		//	Storage::put('nfe.xml', $xml);
+		
+		    return $xmlAssinada;
+		    
 			} catch (\Exception $e) {
 			//aqui você trata possiveis exceptions
 			echo $e->getMessage().'<br>';
 		}
-		$xml = Storage::get('file.xml');
-		return $xml;
+		
 	}
 	
-	function enviaNfe($xml, $configJson)
+	function enviaNfe($xml, $configJson,$certificado,$senha,$tpAmb)
 	{
-	
-		$content = Storage::get('V3S.pfx');
-		$password = '12345678';
 		try {
-			$tools = new Tools($configJson, Certificate::readPfx($content, $password));
-			$xmlEnviada = $tools->sefazEnviaLote(array($xml),'1',0);
-			Storage::put('file.xml', $xml);
+			$tools = new Tools($configJson, Certificate::readPfx($certificado, $senha));
+			$retorno = $tools->sefazEnviaLote(array($xml),$tpAmb,0);
+			
+            return $retorno;
 			} catch (\Exception $e) {
 			//aqui você trata possiveis exceptions
 			echo $e->getMessage().'<br>';
 		}
+		
+		
+	}
 	
+	function consultaRec($retornoEnvio, $configJson, $certificado, $senha,$tpAmb)
+	{
+		try {
+			$tools = new Tools($configJson, Certificate::readPfx($certificado, $senha));
+        $dom = new DOMDocument;
+        $dom->loadXML($retornoEnvio);
+
+        $recibo = $dom->getElementsByTagName('infRec')->item(0)->nodeValue;
+        //Retira o ultimo digito do recibo, já que são apenas 15 numeros
+        $reciboAr = substr($recibo, 0, -1);
+        
+        $retorno  = $tools->sefazConsultaRecibo(411110216497385, $tpAmb);
+        
+        return $retorno;
+	    } catch (InvalidArgumentException $e) {
+	    echo "Ocorreu um erro durante a consulta :" . $e->getMessage();
+	    }
+	    
+	 }
+	
+	function addProt($nfe, $protocolo, $configJson, $certificado, $senha)
+	{
+	    try {
+			$tools = new Tools($configJson, Certificate::readPfx($certificado, $senha));
+
+		     $xmlPronta = Complements::toAuthorize($nfe, $protocolo);
+            return $xmlPronta;
+		} catch (\Exception $e) {
+			//aqui você trata possiveis exceptions
+			echo $e->getMessage().'<br>';
+		}
+    
+	}
+	
+	function validaNfe($nfe, $configJson, $certificado, $senha)
+	{
+	    try {
+			$tools = new Tools($configJson, Certificate::readPfx($certificado, $senha));
+			$retorno = $tools->sefazValidate($nfe);
+
+            return $retorno;
+			} catch (\Exception $e) {
+			//aqui você trata possiveis exceptions
+			echo $e->getMessage().'<br>';
+		}
 	}
 	
 	function danfe($xml)
 	{
 		try {
-			$danfe = new Danfe($xml, 'P', 'A4', 'https://wepushbuttons.com.au/wp-content/uploads/2012/03/twitter-logo-small.jpg', 'F', '');
+			$danfe = new Danfe($xml, 'P', 'A4', '', 'F', '');
 			$id = $danfe->montaDANFE();
 			$pdf = $danfe->render();
 			//o pdf porde ser exibido como view no browser
@@ -512,4 +622,4 @@
 			echo "Ocorreu um erro durante o processamento :" . $e->getMessage();
 		}    
 		
-	}	
+	}

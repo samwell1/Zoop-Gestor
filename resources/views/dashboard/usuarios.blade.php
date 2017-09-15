@@ -57,6 +57,9 @@
 									<td>{{$usuario->name}}</td>
 									<td>{{$usuario->email}}</td>
 									<td class="td-actions text-right">
+									<button type="button" rel="tooltip" title="Ver" class="btn btn-info btn-simple btn-xs" data-toggle="modal" data-target="#modal{{$usuario->id}}"> 
+									<i class="fa fa-eye"></i>
+								</button>
 										<button type="button" rel="tooltip" title="Editar" class="btn btn-primary btn-simple btn-xs" data-toggle="modal" data-target="#editar{{$usuario->id}}">
 											<i class="material-icons">edit</i>
 										</button>
@@ -111,6 +114,47 @@
 										</div>
 									</div>
 								</div>
+								<!-- Estoque -->
+						<div class="modal fade" id="modal{{$usuario->id}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+							<div class="modal-dialog" role="document">
+								<div class="modal-content">
+									<div class="modal-header">
+										<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+										<h4 class="modal-title" id="myModalLabel">Abastecer estoque</h4>
+									</div>
+									<form action="{{route('estoque_repositor')}}" method="POST">
+										{{ csrf_field() }}
+										<input type="hidden" name="idUser" value="{{$usuario->id}}">
+										<div class="modal-body">
+											<div class="row">
+												<div class="col-md-6">
+													<div class="form-group label-floating">
+														<label class="control-label">Produto</label>
+														<select name="produto" class="form-control">
+															@foreach($produtos as $produto)
+															<option value="{{$produto->id}}">{{$produto->nome}} - {{$produto->modelo}} | <b>Estoque: {{$produto->quantidade}}</b></option>
+															@endforeach
+														</select>
+													</div>
+												</div>
+												<div class="col-md-6">
+													<div class="form-group label-floating">
+														<label class="control-label">Quantidade</label>
+														<input type="number" name="quantidade" class="form-control" >
+													</div>
+												</div>
+											</div>
+											<div class="clearfix"></div>
+										</div>
+										<div class="modal-footer">
+											<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+											<button type="submit" class="btn btn-primary">Cadastrar</button>
+										</div>
+									</form>
+								</div>
+							</div>
+						</div>
+						
 								@endforeach
 							</tbody>
 						</table>
@@ -168,56 +212,38 @@
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 				<h4 class="modal-title" id="myModalLabel">Cadastrar usuário</h4>
 			</div>
-			<form enctype="multipart/form-data" action="{{route('cadastrar-produto')}}" id="upload" method="POST">
+			<form enctype="multipart/form-data" action="{{route('cadastrar_usuario')}}" id="upload" method="POST">
 				{{ csrf_field() }}
 				<div class="modal-body">
 					<div class="row">
-						<div class="col-md-4">
+						<div class="col-md-6">
 							<div class="form-group label-floating">
 								<label class="control-label">Nome</label>
-								<input type="text" name="nome" class="form-control" >
+								<input type="text" name="name" class="form-control" >
 							</div>
 						</div>
-						<div class="col-md-4">
+						<div class="col-md-6">
 							<div class="form-group label-floating">
 								<label class="control-label">Email</label>
-								<input type="email" name="email" class="form-control" >
-							</div>
-						</div>
-						<div class="col-md-4">
-							<div class="form-group label-floating">
-								<label class="control-label">Código</label>
-								<input type="text" name="codigo" class="form-control" >
+								<input type="email" name="email" class="form-control"  value="{{ old('email') }}">
 							</div>
 						</div>
 					</div>
 					<div class="row">
-						<div class="col-md-3">
+						<div class="col-md-12">
 							<div class="form-group label-floating">
-								<label class="control-label">Quantidade</label>
-								<input type="number" name="quantidade" class="form-control" >
+								<label class="control-label">Senha</label>
+								<input type="password" name="password" class="form-control" required/>
 							</div>
 						</div>
-						<div class="col-md-5">
-							<div class="form-group is-empty is-fileinput">
-								
-								<input type="file" name="imagem" id="image">
-								<div class="input-group">
-									<input type="text" readonly="" class="form-control" placeholder="Selecione uma imagem">
-									<span class="input-group-btn input-group-sm">
-										<button type="button" class="btn btn-fab btn-fab-mini">
-											<i class="fa fa-file-image-o"></i>
-										</button>
-										</span>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-4">
-									<div class="form-group">
-										<label class="control-label"></label>
-										<img src="" id="preview" style="height:100px;width:auto;">
-									</div>
-								</div>
+							</div>
+					<div class="row">
+						<div class="col-md-12">
+							<div class="form-group label-floating">
+								<label class="control-label">Confirma Senha</label>
+								<input type="password" name="password_confirmation" class="form-control" required/>
+							</div>
+						</div>
 							</div>
 							<div class="clearfix"></div>
 						</div>
@@ -232,7 +258,7 @@
 		@endsection
 		
 		@section('post-script')
-	<script>
+<script>
 		$(".delete").on("submit", function(){
 			return confirm("Tem certeza que deseja deletar este item?");
 		});

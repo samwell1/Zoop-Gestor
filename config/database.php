@@ -50,7 +50,8 @@ return [
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
-            'strict' => true,
+			//Mudado para false por causa do GroupBy
+            'strict' => false,
             'engine' => null,
         ],
 

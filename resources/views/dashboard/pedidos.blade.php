@@ -26,6 +26,7 @@
 				<table class="table">
 					<thead class="text-primary">
 						<th>ID</th>
+						<th>Data</th>
 						<th>Repositor</th>
 						<th>Valor</th>
 						<th>Ações</th>
@@ -34,6 +35,7 @@
 						@foreach($pedidos as $pedido)
 						<tr>
 							<td>{{$pedido->id}}</td>
+							<td>{{$pedido->created_at}}</td>
 							<td>{{$pedido->repositor}}</td>
 							<td>{{formata_dinheiro($pedido->valor)}}</td>
 							<td class="td-actions text-right">
@@ -99,9 +101,10 @@
 						</div>
 					</div>
 					<div class="local">
-					
 					</div>
+					@if(count($produtos) > 1 )
 					<button type="button" class="btn btn-default clonador"><i class="fa fa-plus"></i> Produto</button>
+					@endif
 					<div class="clearfix"></div>
 				</div>
 				<div class="modal-footer">
@@ -119,7 +122,7 @@
 								<label class="control-label">Produto</label>
 								<select name="produto[]" class="form-control">
 									@foreach($produtos as $produto)
-									<option value="{{$produto->id}}">{{$produto->nome}} - {{$produto->modelo}} | <b>Estoque: {{$produto->quantidade}}</b></option>
+									<option value="{{$produto->id}}">{{$produto->nome}} - {{$produto->modelo}} | <b>Estoque: {{$produto->estoque}}</b></option>
 									@endforeach
 								</select>
 							</div>

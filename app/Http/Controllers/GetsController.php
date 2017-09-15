@@ -4,7 +4,6 @@
 	
 	use Illuminate\Http\Request;
 	
-	//use Illuminate\Support\Facades\Request;
 	use Illuminate\Support\Facades\DB;
 	use App\Produto;
 	use App\Pedido;
@@ -51,14 +50,15 @@
 		{
 			$request->user()->authorizeRoles(['admin']);
 			$usuarios = User::all();
-			return view('dashboard.usuarios',['usuarios' => $usuarios]);
+			$produtos = Produto::all();
+			return view('dashboard.usuarios',['usuarios' => $usuarios,'produtos' => $produtos ]);
 		}
 		
 		public function pontosdeVenda(Request $request)
 		{
 			$request->user()->authorizeRoles(['admin']);
 			//$pontosVenda = PontoVenda::all();
-			$pontosVenda = PontoVenda::where('status',1)->join('cidades', 'ponto_vendas.cidade', '=', 'cidades.id')->join('users','ponto_vendas.user_id','=','users.id')->select('ponto_vendas.*','cidades.nome as cidade','users.name as repositor')->get();
+			$pontosVenda = PontoVenda::join('cidades', 'ponto_vendas.cidade', '=', 'cidades.id')->join('status','ponto_vendas.status','=','status.id')->join('users','ponto_vendas.user_id','=','users.id')->select('ponto_vendas.*','cidades.nome as cidade','users.name as repositor','status.nome as status')->get();
 			$produtos = Produto::all();
 			return view('dashboard.pontosdeVenda',['pontosvenda' => $pontosVenda,'produtos' => $produtos]);
 		}
@@ -74,7 +74,9 @@
 		{
 			$request->user()->authorizeRoles(['admin']);
 			//$produtos = Produto::all();
-			$produtos = Produto::join('estoque_repositor','produtos.id','=','estoque_repositor.id_produto')->select('produtos.*','estoque_repositor.estoque as estoque')->get();
+			$idUser = $request->user()->id;
+
+			$produtos = Produto::join('estoque_repositor','produtos.id','=','estoque_repositor.id_produto')->where('estoque_repositor.id_user', $idUser)->select('produtos.*','estoque_repositor.estoque as estoque')->get();
 			$pontovendas = PontoVenda::all();
 			//$pedidos = Pedido::join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->join('users','pedidos.id_repositor','=','users.id')->select('produtos.nome as produto','produtos.modelo as modelo','pedido_produtos.qtde as qtde','users.name as repositor','pedidos.*')->get();
 			//$pedidos = Pedido::join('users','pedidos.id_repositor','=','users.id')->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->select('pedido_produtos.qtde as qtde','pedido_produtos.id_pedido as id_pedido','users.name as repositor','pedidos.*')->groupBy('repositor')->pluck('repositor');;
@@ -85,9 +87,9 @@
 		public function estoque(Request $request)
 		{
 			$request->user()->authorizeRoles(['admin']);
-			$repositores = User::whereHas('roles', function ($query) {$query->where('name', '=', 'repositor');})->join('estoque_repositor','users.id','=','estoque_repositor.id_user')->join('produtos','estoque_repositor.id_produto','produtos.id')->select('users.*','produtos.nome as produto','produtos.modelo as produtomodelo','estoque_repositor.estoque as estoque')->get();
+			$repositores = User::whereHas('roles', function ($query) {$query->where('name', '=', 'repositor');})->leftJoin('estoque_repositor','users.id','=','estoque_repositor.id_user')->leftJoin('produtos','estoque_repositor.id_produto','produtos.id')->select('users.*','produtos.nome as produto','produtos.modelo as produtomodelo','estoque_repositor.estoque as estoque')->get();
 			$produtos = Produto::all()->where('status', 1);
-			$pontosVenda = PontoVenda::where('ponto_vendas.status', 1)->join('estoque_pontovenda','ponto_vendas.id','=','estoque_pontovenda.id_pontovenda')->join('produtos','estoque_pontovenda.id_produto','produtos.id')->select('ponto_vendas.*','produtos.nome as produto','produtos.modelo as produtomodelo','estoque_pontovenda.estoque as estoque')->get();
+			$pontosVenda = PontoVenda::where('ponto_vendas.status', 1)->leftJoin('estoque_pontovenda','ponto_vendas.id','=','estoque_pontovenda.id_pontovenda')->leftJoin('produtos','estoque_pontovenda.id_produto','produtos.id')->select('ponto_vendas.*','produtos.nome as produto','produtos.modelo as produtomodelo','estoque_pontovenda.estoque as estoque')->get();
 			
 			$produtosEstoque = Produto::where('status',1)->sum('quantidade');
 		$produtosVendendo = DB::table('estoque_pontovenda')->sum('estoque');
@@ -110,6 +112,9 @@
 		return view('dashboard.pedido.infopedido',[ 'pedido' => $pedido, 'produtos' => $produtos]);
 		}
 		
+		public function tempo_agora() {
+			return Date('d/m/Y - H:i');
+		}
 		
 		}
 				

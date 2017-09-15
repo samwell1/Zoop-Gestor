@@ -16,7 +16,7 @@
 	Auth::routes();
 	
 	//Inicio GET's ADMIN
-	Route::get('/', function () {return view('welcome');});
+	Route::get('/', function () {return view('auth.login');});
 	
 	Route::get('/admin/home', 'GetsController@index')->name('home');
 	
@@ -42,6 +42,14 @@
 	Route::get('/user/home', 'UserGetController@index')->name('user_home');
 	
 	Route::get('/user/pdv', 'UserGetController@pdv')->name('user_pdv');
+	
+	Route::get('/user/pedidos', 'UserGetController@pedidos')->name('user_pedidos');
+	
+	Route::get('/user/pedido/{id}', 'UserGetController@infopedido');
+	
+	Route::get('/user/pdv/{id}', 'UserGetController@infopdv');
+	
+	
 	//Fim
 	
 	//Inicio CRUD Produto
@@ -65,13 +73,17 @@
 	//Fim
 	
 	//Inicio POST's ADMIN
-	Route::post('/estoque-pdv', 'PostsController@estoqueRepositor')->name('estoque-pdv');
+	Route::post('/estoque_repositor', 'PostsController@estoqueRepositor')->name('estoque_repositor');
 	
 	Route::post('/cadastrar_pedido', 'PostsController@cadastrarPedido')->name('cadastrar_pedido');
+	
+	Route::post('/cadastrar_usuario', 'PostsController@cadastrarUsuario')->name('cadastrar_usuario');
 	//Fim
 	
 	//Inicio POST's USER
 	Route::post('/user_cadastrar_pdv', 'UserPostController@cadastrarPdv')->name('user_cadastrar_pdv');
+	
+	Route::post('/user/pedido/{id}/nf', 'UserPostController@nfepedido');
 	//Fim
 	
 	//Inicio Funcoes
@@ -86,6 +98,8 @@
 	Route::get('/cidades/{uf}', function($uf = null){
 		return response()->json(\Artesaos\Cidade::where('uf', $uf)->orderBy('nome')->get());
 	});
+	
+	Route::get('/tempo_agora', 'GetsController@tempo_agora')->name('tempo_agora');
 	//Fim
 	
 	

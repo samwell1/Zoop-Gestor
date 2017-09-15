@@ -55,6 +55,12 @@
 								<p>Pontos de Venda</p>
 							</a>
 						</li>
+						<li class="{{set_active('user/pedidos')}}">
+							<a href="{{ route('user_pedidos') }}">
+								<i class="fa fa-file-text-o"></i>
+								<p>Pedidos</p>
+							</a>
+						</li>
 					</ul>
 				</div>
 			</div>
@@ -75,15 +81,17 @@
 							<ul class="nav navbar-nav navbar-right">
 								<li>
 									<a href="#pablo" class="dropdown-toggle" data-toggle="dropdown">
-										<i class="material-icons">dashboard</i>
-										<p class="hidden-lg hidden-md">Dashboard</p>
+									<div id="data"></div>
+										
+										
+										
 									</a>
 								</li>
 								<li class="dropdown">
 									<a href="#" class="dropdown-toggle" data-toggle="dropdown">
 										<i class="material-icons">notifications</i>
 										<span class="notification">1</span>
-										<p class="hidden-lg hidden-md">Notifications</p>
+										<p class="hidden-lg hidden-md">Notificações</p>
 									</a>
 									<ul class="dropdown-menu">
 										<li><a href="#">Mike John responded to your email</a></li>
@@ -92,8 +100,7 @@
 								<li class="dropdown">
 									<a href="#pablo" class="dropdown-toggle" data-toggle="dropdown">
 										
-										<i class="material-icons"> person</i>
-										<p class="hidden-lg hidden-md">Profile</p>
+										<i class="material-icons">person</i>
 										{{ Auth::user()->name }}	
 										
 									</a>
@@ -204,6 +211,24 @@
 	<!-- Demo -->
 	<script src="{{ asset('js/demo.js') }}"></script>
 	
+	<script>
+function get_fb_complete(){
+    
+    var feedback = $.ajax({
+        type: "GET",
+        url: "{{url('tempo_agora')}}"
+    }).done(function(data){
+	$('#data').html('<i class="material-icons">date_range</i>'+data);
+        setTimeout(function(){get_fb_complete();}, 1000);
+    }).responseText;
+
+    //$('#data').html('complete feedback');
+}
+
+$(function(){
+    get_fb_complete();
+});
+</script>
 	@yield('post-script')
 	
 </html>

@@ -88,7 +88,7 @@
 					@if(count($pontosvenda) === 0 )
 						<tr><td>
 							<h3>
-								Nenhum produto cadastrado
+								Nenhum ponto de venda cadastrado
 							</h3>
 							</td>
 						</tr>
@@ -96,8 +96,19 @@
 						@foreach($pontosvenda as $pontovenda)
 						<tr>
 							<td>{{$pontovenda->nome}}</td>
-							<td>{{$pontovenda->produto}}/{{$pontovenda->produtomodelo}}</td>
+							@if($pontovenda->produto == null)
+								<td>Sem estoque</td>
+							@else
+								<td>{{$pontovenda->produto}}/{{$pontovenda->produtomodelo}}</td>
+							@endif
+							
+							@if($pontovenda->estoque == null)
+								<td>0</td>
+							@else
 							<td>{{$pontovenda->estoque}}</td>
+							@endif
+							
+							
 							<td class="td-actions text-right">
 								<button type="button" rel="tooltip" title="Editar" class="btn btn-primary btn-simple btn-xs" data-toggle="modal" data-target="#editar{{$produto->id}}">
 									<i class="material-icons">edit</i>
@@ -130,7 +141,7 @@
 					@if(count($repositores) === 0 )
 						<tr><td>
 							<h3>
-								Nenhum produto cadastrado
+								Nenhum repositor cadastrado
 							</h3>
 							</td>
 						</tr>
@@ -138,8 +149,18 @@
 						@foreach($repositores as $repositor)
 						<tr>
 							<td>{{$repositor->name}}</td>
-							<td>{{$repositor->produto}}/{{$repositor->produtomodelo}}</td>
-							<td>{{$repositor->estoque}}</td>
+							@if($repositor->produto == null)
+								<td>Sem estoque</td>
+							@else
+								<td>{{$repositor->produto}}/{{$repositor->produtomodelo}}</td>
+							@endif
+							
+							@if($repositor->estoque == null)
+								<td>0</td>
+							@else
+								<td>{{$repositor->estoque}}</td>
+							@endif
+							
 							<td class="td-actions text-right">
 								<button type="button" rel="tooltip" title="Editar" class="btn btn-primary btn-simple btn-xs" data-toggle="modal" data-target="#editar{{$produto->id}}">
 									<i class="material-icons">edit</i>

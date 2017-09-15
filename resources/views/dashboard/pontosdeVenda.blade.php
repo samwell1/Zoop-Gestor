@@ -23,8 +23,8 @@
 						<th>Endereço</th>
 						<th>Região/Bairro</th>
 						<th>Cidade</th>
-						<th>Estado</th>
 						<th>Cadastrado por</th>
+						<th>Status</th>
 						<th>Ações</th>
 					</thead>
 					<tbody>
@@ -41,9 +41,24 @@
 							<td>{{$pontovenda->nome}}</td>
 							<td>{{$pontovenda->endereco}}, {{$pontovenda->numero}}</td>
 							<td>{{$pontovenda->regiao}}</td>
-							<td>{{$pontovenda->cidade}}</td>
-							<td>{{$pontovenda->estado}}</td>
+							<td>{{$pontovenda->cidade}}/{{$pontovenda->estado}}</td>
 							<td>{{$pontovenda->repositor}}</td>
+							@if($pontovenda->status == 'Ativo')
+							<td><button type="button" rel="tooltip" title="Ponto de venda ativado" class="btn btn-success btn-simple btn-xs"> 
+									<i class="fa fa-circle"></i> {{$pontovenda->status}}
+								</button> </td>
+								@elseif($pontovenda->status == 'Pendente')
+							<td>
+								<button type="button" rel="tooltip" title="Ponto de venda pendente (contrato, documentos)" class="btn btn-warning btn-simple btn-xs" data-toggle="modal" data-target="#modal{{$pontovenda->id}}"> 
+									<i class="fa fa-circle"></i> {{$pontovenda->status}}
+								</button></td>
+								@elseif($pontovenda->status == 'Desativado')
+								<td>
+								<button type="button" rel="tooltip" title="Ponto de venda desativado" class="btn btn-danger btn-simple btn-xs" data-toggle="modal" data-target="#editar{{$pontovenda->id}}">
+									<i class="fa fa-circle"></i> {{$pontovenda->status}}
+								</button></td>
+								@endif
+								
 							<td class="td-actions text-right">
 								<button type="button" rel="tooltip" title="Ver" class="btn btn-info btn-simple btn-xs" data-toggle="modal" data-target="#modal{{$pontovenda->id}}"> 
 									<i class="fa fa-eye"></i>
@@ -124,7 +139,7 @@
 										<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 										<h4 class="modal-title" id="myModalLabel">Abastecer estoque</h4>
 									</div>
-									<form action="{{route('estoque-pdv')}}" method="POST">
+									<form action="" method="POST">
 										{{ csrf_field() }}
 										<input type="hidden" name="pdv" value="{{$pontovenda->id}}">
 										<div class="modal-body">
@@ -185,28 +200,63 @@
 						</div>
 						<div class="col-md-4">
 							<div class="form-group label-floating">
+								<label class="control-label">CNPJ</label>
+								<input type="text" name="cnpj" class="form-control" >
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group label-floating">
+								<label class="control-label">CEP</label>
+								<input type="text" name="endereco" class="form-control" >
+							</div>
+						</div>
+						
+					</div>
+					<div class="row">
+					<div class="col-md-4">
+							<div class="form-group label-floating">
 								<label class="control-label">Endereço</label>
 								<input type="text" name="endereco" class="form-control" >
 							</div>
 						</div>
-						<div class="col-md-4">
+						<div class="col-md-2">
+							<div class="form-group label-floating">
+								<label class="control-label">Nº</label>
+								<input type="text" name="numero" class="form-control" >
+							</div>
+						</div>
+						<div class="col-md-3">
 							<div class="form-group label-floating">
 								<label class="control-label">Bairro/Região</label>
 								<input type="text" name="regiao" class="form-control" >
 							</div>
 						</div>
+						<div class="col-md-3">
+							<div class="form-group label-floating">
+								<label class="control-label">Telefone</label>
+								<input type="text" name="telefone" class="form-control" >
+							</div>
+						</div>
+						
 					</div>
+					
 					<div class="row">
-						<div class="col-md-6">
+					<div class="col-md-4">
 							<div class="form-group label-floating">
 								<label class="control-label">UF</label>
 								<select id="uf" name="estado" class="uf form-control"></select>
 							</div>
 						</div>
-						<div class="col-md-6">
+						<div class="col-md-4">
 							<div class="form-group label-floating">
 								<label class="control-label">Cidade</label>
 								<select id="cidade" name="cidade" class="cidade form-control"></select>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<div class="form-group label-floating">
+								<label class="control-label">Email</label>
+								<input type="text" name="email" class="form-control" >
 							</div>
 						</div>
 					</div>

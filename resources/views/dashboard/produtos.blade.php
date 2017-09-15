@@ -67,14 +67,13 @@
 										<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 										<h4 class="modal-title" id="myModalLabel">Editar produto</h4>
 									</div>
-									<form enctype="multipart/form-data" action="{{route('editar_produto')}}"method="POST">
-										{{ csrf_field() }}
-										<input type="hidden" name="idprod" value="{{$produto->id}}" class="form-control" >
+									<form action="{{route('editar_produto')}}" method="POST">
 										<div class="modal-body">
 											<div class="row">
 												<div class="col-md-4">
 													<div class="form-group label-floating">
 														<label class="control-label">Nome</label>
+														<input type="hidden" name="idProd" value="{{$produto->id}}" class="form-control" >
 														<input type="text" name="nome" value="{{$produto->nome}}" class="form-control" >
 													</div>
 												</div>
@@ -109,7 +108,7 @@
 														
 														<input type="file" name="imagem" id="image">
 														<div class="input-group">
-															<input type="text" readonly="" class="form-control" placeholder="Selecione uma imagem">
+															<input type="text" readonly="" class="form-control" value="" placeholder="Selecione uma imagem">
 															<span class="input-group-btn input-group-sm">
 																<button type="button" class="btn btn-fab btn-fab-mini">
 																	<i class="fa fa-file-image-o"></i>
@@ -128,9 +127,10 @@
 											<div class="clearfix"></div>
 										</div>
 										<div class="modal-footer">
-											<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
-											<button type="submit" class="btn btn-primary">Cadastrar</button>
+											<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+											<button type="submit" class="btn btn-primary">Confirmar</button>
 										</div>
+										{{ csrf_field() }}
 									</form>
 								</div>
 							</div>

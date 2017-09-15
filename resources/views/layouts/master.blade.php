@@ -99,7 +99,7 @@
 							<ul class="nav navbar-nav navbar-right">
 								<li>
 									<a href="#pablo" class="dropdown-toggle" data-toggle="dropdown">
-										<i class="material-icons">dashboard</i>
+									<div id="data"></div>
 										<p class="hidden-lg hidden-md">Dashboard</p>
 									</a>
 								</li>
@@ -228,6 +228,25 @@
 	<!-- Demo -->
 	<script src="{{ asset('js/demo.js') }}"></script>
 	
+		<script>
+function get_fb_complete(){
+    
+    var feedback = $.ajax({
+        type: "GET",
+        url: "{{url('tempo_agora')}}"
+    }).done(function(data){
+	$('#data').html('<i class="material-icons">date_range</i>'+data);
+        setTimeout(function(){get_fb_complete();}, 1000);
+    }).responseText;
+
+    //$('#data').html('complete feedback');
+}
+
+$(function(){
+    get_fb_complete();
+});
+</script>
+
 	@yield('post-script')
 	
 </html>

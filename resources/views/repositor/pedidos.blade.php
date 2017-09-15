@@ -1,4 +1,4 @@
-@extends('layouts.master')
+@extends('layouts.repositor')
 
 @section('content')
 <style>
@@ -26,24 +26,37 @@
 				<table class="table">
 					<thead class="text-primary">
 						<th>ID</th>
-						<th>Repositor</th>
+						<th>Data</th>
+						<th>Ponto de Venda</th>
 						<th>Valor</th>
 						<th>Ações</th>
 					</thead>
 					<tbody>
+					@if(count($pedidos) === 0 )
+						<tr><td>
+							<h3>
+								Nenhum pedido cadastrado
+							</h3>
+						</td>
+						</tr>
+						@endif
 						@foreach($pedidos as $pedido)
 						<tr>
 							<td>{{$pedido->id}}</td>
-							<td>{{$pedido->repositor}}</td>
+							<td>{{$pedido->created_at}}</td>
+							<td>{{$pedido->ponto_venda}}</td>
 							<td>{{formata_dinheiro($pedido->valor)}}</td>
 							<td class="td-actions text-right">
-								<a href="{{ URL::to('admin/pedido/' . $pedido->id) }} "><button type="button" rel="tooltip" title="Visualizar" class="btn btn-danger btn-simple btn-xs delete">
+								<a href="{{ URL::to('user/pedido/' . $pedido->id) }}"><button type="button" rel="tooltip" title="Visualizar" class="btn btn-danger btn-simple btn-xs delete">
 									<i class="material-icons">pageview</i>
 								</button></a>
-								<button type="button" rel="tooltip" title="Editar" class="btn btn-primary btn-simple btn-xs">
+								<form action="{{ URL::to('user/pedido/' . $pedido->id.'/nf') }}" method="POST">
+								{{ csrf_field() }}
+								<input type="hidden" value="{{$pedido->id}}" name="idPedido">
+								<button type="submit" rel="tooltip" title="Emitir NFe" class="btn btn-primary btn-simple btn-xs">
 									<i class="material-icons">edit</i>
 								</button>
-								
+								</form>
 								<button type="button" rel="tooltip" title="Deletar" class="btn btn-danger btn-simple btn-xs delete">
 									<i class="material-icons">close</i>
 								</button>
@@ -68,7 +81,7 @@
 			<form enctype="multipart/form-data" action="{{route('cadastrar_pedido')}}"  method="POST">
 				{{ csrf_field() }}
 				<div class="modal-body">
-				<div class="row">
+					<div class="row">
 						<div class="col-md-12">
 							<div class="form-group label-floating">
 								<label class="control-label">Ponto de Venda</label>
@@ -99,9 +112,11 @@
 						</div>
 					</div>
 					<div class="local">
-					
+						
 					</div>
+					@if(count($produtos) > 1 )
 					<button type="button" class="btn btn-default clonador"><i class="fa fa-plus"></i> Produto</button>
+					@endif
 					<div class="clearfix"></div>
 				</div>
 				<div class="modal-footer">
@@ -114,54 +129,54 @@
 </div>
 
 <div class="row produtos hiden">
-						<div class="col-md-6">
-							<div class="form-group label-floating ">
-								<label class="control-label">Produto</label>
-								<select name="produto[]" class="form-control">
-									@foreach($produtos as $produto)
-									<option value="{{$produto->id}}">{{$produto->nome}} - {{$produto->modelo}} | <b>Estoque: {{$produto->quantidade}}</b></option>
-									@endforeach
-								</select>
-							</div>
-						</div>
-						<div class="col-md-3" >
-							<div class="form-group label-floating">
-								<label class="control-label">Quantidade</label>
-								<input type="number" name="qtde[]" class="form-control" value="1">
-							</div>
-						</div>
-						<div class="col-md-3" >
-							<div class="form-group label-floating">
-								<label class="control-label"></label>
-								<button type="button" class="btn btn-warning btn_remove"><i class="fa fa-trash-o"></i> Deletar</button>	
-							</div>
-						</div>
-						
-						
-					</div>
-@endsection
-
-@section('post-script')
-<script>
+	<div class="col-md-6">
+		<div class="form-group label-floating ">
+			<label class="control-label">Produto</label>
+			<select name="produto[]" class="form-control">
+				@foreach($produtos as $produto)
+				<option value="{{$produto->id}}">{{$produto->nome}} - {{$produto->modelo}} | <b>Estoque: {{$produto->estoque}}</b></option>
+				@endforeach
+			</select>
+		</div>
+	</div>
+	<div class="col-md-3" >
+		<div class="form-group label-floating">
+			<label class="control-label">Quantidade</label>
+			<input type="number" name="qtde[]" class="form-control" value="1">
+		</div>
+	</div>
+	<div class="col-md-3" >
+	<div class="form-group label-floating">
+	<label class="control-label"></label>
+	<button type="button" class="btn btn-warning btn_remove"><i class="fa fa-trash-o"></i> Deletar</button>	
+	</div>
+	</div>
+	
+	
+	</div>
+	@endsection
+	
+	@section('post-script')
+	<script>
 	$(".delete").on("submit", function(){
-		return confirm("Tem certeza que deseja deletar este item?");
+	return confirm("Tem certeza que deseja deletar este item?");
 	});
 	
 	$('.clonador').click(function(){
-		//clona o modelo oculto, clone(true) para copiar também os manipuladores de eventos
-		$clone = $('.produtos.hiden').clone(true);
-		//remove a classe que oculta o modelo do elemento clonado
-		$clone.removeClass('hiden');
-		
-		//adiciona no form
-		$('.local').append($clone);
-		
+	//clona o modelo oculto, clone(true) para copiar também os manipuladores de eventos
+	$clone = $('.produtos.hiden').clone(true);
+	//remove a classe que oculta o modelo do elemento clonado
+	$clone.removeClass('hiden');
+	
+	//adiciona no form
+	$('.local').append($clone);
+	
 	});
 	//Para remover
 	$('.btn_remove').click(function(){
-		$(this).parents('.produtos').remove();
+	$(this).parents('.produtos').remove();
 	});
-</script>
-
-
-@endsection									
+	</script>
+	
+	
+	@endsection										
