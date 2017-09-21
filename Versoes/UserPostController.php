@@ -71,57 +71,13 @@ class UserPostController extends Controller
 		
 			$request->user()->authorizeRoles(['repositor']);
 			$idPedido = $request['idPedido'];
-			
-        		
+				
+        		$idPontoVenda = 1;
  				$Produtos[] = array('id' => 1,'qtde' => '1');
- 			/*	if(nfe($idPontoVenda,$Produtos,$idPedido))	
+ 				if(nfe($idPontoVenda,$Produtos,$idPedido))	
 				return redirect('user/pedidos')->with('status', 'NF-e gerada com sucesso!');
 				else
-				return redirect('user/pedidos')->with('error', 'Erro! NF-e com erro.');*/
-			
-			$lastNFe = DB::table('nf')->select('id')->orderBy('id','desc')->first();
-			
-		
-			
-			$pontoVenda = PontoVenda::find($request['idPdv']);
-			$idPontoVenda = $pontoVenda->id;
-			
-			if($pontoVenda->estado == 'PR'){
-			if(count($lastNFe) == 0 || count($lastNFe) == null){		//Verifica se já existe NFe
-			if(nfe($idPontoVenda,$Produtos,$idPedido,1)){	//Envia Remessa PR
-						return redirect('user/pedidos')->with('status', 'NF-e gerada com sucesso!');
-						}else{
-						return redirect('user/pedidos')->with('error', 'Erro! NF-e com erro.');
-						}
-			}else if(nfe($idPontoVenda,$Produtos,$idPedido,5)){	//Venda Produto PR
-					if(nfe($idPontoVenda,$Produtos,$idPedido,3)){	//Retorno Remessa PR
-					if(nfe($idPontoVenda,$Produtos,$idPedido,1)){	//Envia Remessa PR
-						return redirect('user/pedidos')->with('status', 'NF-e gerada com sucesso!');
-						}
-					}
-				}
-				else
 				return redirect('user/pedidos')->with('error', 'Erro! NF-e com erro.');
-			}else{
-				if(count($lastNFe) == 0 || count($lastNFe) == null){		//Verifica se já existe NFe
-			if(nfe($idPontoVenda,$Produtos,$idPedido,2)){	//Envia Remessa  Fora do PR
-						return redirect('user/pedidos')->with('status', 'NF-e gerada com sucesso!');
-						}else{
-						return redirect('user/pedidos')->with('error', 'Erro! NF-e com erro.');
-						}
-			
-			if(nfe($idPontoVenda,$Produtos,$idPedido,6)){	//Venda Produto Fora do PR
-					if(nfe($idPontoVenda,$Produtos,$idPedido,4)){	//Retorno Remessa  Fora do PR
-					if(nfe($idPontoVenda,$Produtos,$idPedido,2)){	//Envia Remessa  Fora do PR
-						return redirect('user/pedidos')->with('status', 'NF-e gerada com sucesso!');
-						}
-					}
-				}
-				else
-				return redirect('user/pedidos')->with('error', 'Erro! NF-e com erro.');
-			}
-				
-		}
 		}
 		
 		public function enviNfe(Request $request)
@@ -160,62 +116,41 @@ class UserPostController extends Controller
 		//Senha do Certificado Digital para a emissão das NFe's
 		$senha = '12345678';
 		
-		$nfes = DB::table('nf')->where('id_pedido', $idPedido)->get();
-		
-		foreach($nfes as $nfe){
-			
-		if($nfe->tipo == 1){
-		//Envio
-		$PastaNFe = '/envioRemessa';
-		
-		}else if($nfe->tipo == 2){
-		//Retorno
-		$PastaNFe = '/retornoRemessa';
-		
-		}else if($nfe->tipo == 3){
-		//Venda
-		$PastaNFe = '/Venda';
-		
-		}
-		
+		$nfe = DB::table('nf')->where('id_pedido', $idPedido)->first();
 		$nfeAss = Storage::get($nfe->xmlAss);
 		
 		//danfe($nfeAss);
 		
 		//Consulta Status do Recibo da XML, caso esteja tudo OK! é retornado o //protocolo para adicionar a XML
 		
-		$recibo = Storage::get($nfe->recibo);
+	/*	$recibo = Storage::get($nfe->recibo);
 		
 		$protocolo = consultaRec($recibo, $configJson,$certificado,$senha,$tpAmb);
-		$urlProtocolo = 'pdvs/'.$pontoVenda->nome.'/nfe/nfe'.strval($pedido->id).$PastaNFe.'/nfe'.strval($pedido->id).'-Protocolo.xml';
+
+		$urlProtocolo = 'pdvs/'.$pontoVenda->nome.'/nfe/nfe'.strval($pedido->id).'/nfe'.strval($pedido->id).'-Protocolo.xml';
 		
-		if(DB::table('nf')->where('id_pedido',$idPedido)->where('tipo', $nfe->tipo)->update(['status' => 2, 'protocolo' => $urlProtocolo]))
-			Storage::put($urlProtocolo, $protocolo);
+	    Storage::put($urlProtocolo, $protocolo);
 	
-	    $nf = Storage::get($nfe->xmlAss);
+	    $nfe = Storage::get($nfe->xmlAss);
+
 		$protocolo = Storage::get($urlProtocolo);
 
-		$nf = addProt($nf, $protocolo, $configJson,$certificado,$senha);
+		$nfe = addProt($nfe, $protocolo, $configJson,$certificado,$senha);
         
-		$urlXmlPronta = 'pdvs/'.$pontoVenda->nome.'/nfe/nfe'.strval($pedido->id).$PastaNFe.'/nfe'.strval($pedido->id).'-nfePronta.xml';
-		if(DB::table('nf')->where('id_pedido',$idPedido)->where('tipo', $nfe->tipo)->update(['status' => 3, 'xmlPronta' => $urlXmlPronta]))
-		Storage::put($urlXmlPronta, $nf);
+		$urlXmlPronta = 'pdvs/'.$pontoVenda->nome.'/nfe/nfe'.strval($pedido->id).'/nfe'.strval($pedido->id).'-nfePronta.xml';
+		Storage::put($urlXmlPronta, $nfe);*/
  
-		$nfePronta = Storage::get($urlXmlPronta);
+   //   $nfePronta = Storage::get($urlXmlPronta);
 	  
-		$sucesso = false;
-		$pdf = danfe($nfePronta);
-		$urlDanfe = 'pdvs/'.$pontoVenda->nome.'/nfe/nfe'.strval($pedido->id).$PastaNFe.'/nfe'.strval($pedido->id).'-Danfe.pdf';
-		if(DB::table('nf')->where('id_pedido',$idPedido)->where('tipo', $nfe->tipo)->update(['status' => 3, 'danfe' => $urlDanfe])){
-			Storage::put($urlDanfe, $pdf);
-			$sucesso = true;
-		}
-}
-			
-			if($sucesso == true)	
+		header('Content-type: text/xml');
+		echo $nfeAss;
+		//Imprimir DANFE
+	//	danfe($nfePronta);
+	
+ 				/*if()	
 				return redirect('user/pedidos')->with('status', 'NF-e enviada com sucesso!');
 				else
-				return redirect('user/pedidos')->with('error', 'Erro! NF-e com erro.');
+				return redirect('user/pedidos')->with('error', 'Erro! NF-e com erro.');*/
 		}
 		
 }

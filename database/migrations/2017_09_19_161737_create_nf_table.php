@@ -20,6 +20,7 @@ class CreateNfTable extends Migration
 			$table->string('recibo');
 			$table->string('protocolo');
 			$table->string('xmlPronta');
+			$table->string('danfe');
 			$table->integer('tipo');
 			$table->integer('status');
             $table->timestamps();

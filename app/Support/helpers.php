@@ -1,6 +1,8 @@
 <?php
 	
 	use Illuminate\Support\Facades\DB;
+	use Illuminate\Support\Facades\Storage;
+	
 	use App\Produto;
 	use App\Pedido;
 	use App\PontoVenda;
@@ -12,9 +14,8 @@
 	use NFePHP\Common\Certificate;
 	use NFePHP\Common\Soap\SoapCurl;
 	use NFePHP\NFe\Make;
-	
 	use NFePHP\DA\NFe\Danfe;
-	use Illuminate\Support\Facades\Storage;
+	
 	
 	function set_active($uri)
 	{
@@ -46,50 +47,82 @@ function nfe($idPontoVenda,$aP,$idPedido,$tipoNFe){
 		
     	$produtos = DB::table('pedido_produtos')->where('pedido_produtos.id_pedido', $idPedido)->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->select('produtos.nome as nome','produtos.modelo as modelo','produtos.codigo as codigo','pedido_produtos.qtde as qtde','produtos.id as id_produto','produtos.preco as preco','pedido_produtos.id_produto as id_prod_ped','produtos.peso as peso')->get();
 		
+		$pontoVenda = PontoVenda::find($pedido->id_pontovenda);
+		
 		$lastNFe = DB::table('nf')->select('id')->orderBy('id','desc')->first();
 		if(count($lastNFe) == 0 || count($lastNFe) == null)
 		$nNF = 1;
 		else
 		$nNF = ($lastNFe->id + 1);
 		
-		
+		$referenciarNfe = false;
 	switch($tipoNFe){
 			    //envioRemessaPR
 			    case 1:
 			     $CFOPp = '5917';   
 				 $natOp = 'Remessa de mercadoria em consignação mercantil ou industrial';
+				 $tpNF = 1;
+				 $finNFe = 1;
 			    break;
 			    //envioRemessaOut
 			    case 2:
 			     $CFOPp = '6917';   
 				 $natOp = 'Remessa de mercadoria em consignação mercantil ou industrial';
+				 $tpNF = 1;
+				 $finNFe = 1;
 			    break;
 			    //retornoRemessaPR
 			    case 3:
 			     $CFOPp = '1918';   
 				 $natOp = 'Devolução de mercadoria remetida em consignação mercantil ou industrial';
+				 $tpNF = 0;
+				 $finNFe = 4;
+				 $referenciarNfe = true;
 			    break;
 			    //retornoRemessaOut
 			    case 4:
 			     $CFOPp = '2918';   
 				 $natOp = 'Devolução de mercadoria remetida em consignação mercantil ou industrial';
+				 $tpNF = 0;
+				 $finNFe = 4;
+				 $referenciarNfe = true;
 			    break;
 			    //vendaPR
 			    case 5:
 			     $CFOPp = '5102';   
 				 $natOp = 'Venda de mercadoria adquirida ou recebida de terceiros';
+				 $tpNF = 1;
+				 $finNFe = 1;
 			    break;
 			    //vendaOut
 			    case 6:
 			     $CFOPp = '6102';   
 				 $natOp = 'Venda de mercadoria adquirida ou recebida de terceiros';
+				 $tpNF = 1;
+				 $finNFe = 1;
 			    break;
 			}
-			
+
 		//$nfe->tagide($cUF, $cNF, $natOp, $indPag, $mod, $serie, $nNF, $dhEmi, $dhSaiEnt, $tpNF, $idDest, $cMunFG, $tpImp, $tpEmis, $cDV, $tpAmb, $finNFe, $indFinal, $indPres, $procEmi, $verProc, $dhCont, $xJust);
 		
-		$nfe->tagide(41,00000010,$natOp,1,55,1,$nNF,date("Y-m-d\TH:i:sP"),date("Y-m-d\TH:i:sP"),1,1,'4106902',1,1,2,$tpAmb,1,1,9,0,'4.0.43','','');
+		$nfe->tagide(41,00000010,$natOp,1,55,1,(600+$nNF),date("Y-m-d\TH:i:sP"),date("Y-m-d\TH:i:sP"),$tpNF,1,'4106902',1,1,2,$tpAmb,$finNFe,1,9,0,'4.0.43','','');
 		
+		
+	//refNFe NFe referenciada  
+	if($referenciarNfe == true){
+	$lastPedido = Pedido::where('id_pdv',$pontoVenda->id)->select('id')->orderBy('id','desc')->skip(1)->take(1)->first();
+	$lastNFe = DB::table('nf')->where('tipo',1)->where('id_pedido',$lastPedido->id)->select('xmlPronta')->orderBy('id','desc')->first();
+	$xmlPronta = Storage::get($lastNFe->xmlPronta);
+	$dom = new DOMDocument;
+    $dom->loadXML($xmlPronta);
+	
+	$chave = $dom->getElementsByTagName('chNFe')->item(0)->nodeValue;
+	$refNFe = $chave;
+	
+	$nfe->tagrefNFe($refNFe);	
+	}
+
+
 		$CNPJ = '26849873000167';
 		$CPF = ''; // Utilizado para CPF na nota
 		$xNome = 'ZOOP';
@@ -116,7 +149,7 @@ function nfe($idPontoVenda,$aP,$idPedido,$tipoNFe){
 		$fone = '34020106';
 		$nfe->tagenderEmit($xLgr, $nro, $xCpl, $xBairro, $cMun, $xMun, $UF, $CEP, $cPais, $xPais, $fone);
 		
-		$pontoVenda = PontoVenda::find($pedido->id_pontovenda);
+		
 		
 		//destinatÃ¡rio
 		$CNPJ = $pontoVenda->cnpj;
@@ -192,19 +225,25 @@ function nfe($idPontoVenda,$aP,$idPedido,$tipoNFe){
 			if($tipoNFe == 1 || $tipoNFe == 2){
 		//Envio
 		$qComq = strval($pontoVenda->max_estoque);
+		$vProdq = number_format(($pontoVenda->max_estoque * $produto->preco), 2 ,'.','');//'41.90';
+		$qTribq = strval($pontoVenda->max_estoque);
 		}else if($tipoNFe == 3 || $tipoNFe == 4){
 		//Retorno
 		$qComq = strval($pontoVenda->max_estoque - $prod->qtde);
+		$vProdq = number_format((($pontoVenda->max_estoque - $prod->qtde) * $produto->preco), 2 ,'.','');//'41.90';
+		$qTribq = strval($pontoVenda->max_estoque - $prod->qtde);
 		}else if($tipoNFe == 5 || $tipoNFe == 6){
 		//Venda
 		$qComq = strval($prod->qtde);
+		$vProdq = number_format(($prod->qtde * $produto->preco), 2 ,'.','');//'41.90';
+		$qTribq = strval($prod->qtde);
 		}
 			$qCom = $qComq;//'10';
 			$vUnCom = number_format($produto->preco, 2 ,'.','');//'4.19';
-			$vProd = number_format(($prod->qtde * $produto->preco), 2 ,'.','');//'41.90';
+			$vProd = $vProdq;
 			$cEANTrib = '';
 			$uTrib = 'Un';
-			$qTrib = strval($prod->qtde);
+			$qTrib = $qTribq;
 			$vUnTrib = number_format($produto->preco, 2 ,'.','');//'4.19';
 			$vFrete = '';
 			$vSeg = '';
@@ -357,8 +396,8 @@ function nfe($idPontoVenda,$aP,$idPedido,$tipoNFe){
 		
 		//retTrib
 		//$resp = $nfe->tagretTrib($vRetPIS, $vRetCOFINS, $vRetCSLL, $vBCIRRF, $vIRRF, $vBCRetPrev, $vRetPrev);
-		$vTotalPedido += ($prod->qtde * $produto->preco);
-		$qTotalPedido += $prod->qtde;
+		$vTotalPedido += $vProdq;
+		$qTotalPedido += $qComq;
 		$pesoTotalPedido += $produto->peso;
 		$sItem++;
 		}
@@ -556,16 +595,17 @@ function nfe($idPontoVenda,$aP,$idPedido,$tipoNFe){
 		Storage::put($urlXmlAssinada, $xmlAssinada);
 		
         //Envia XML (NFe) para a SEFAZ e retorna o Status do XML
-	/*	$recibo = enviaNfe($xmlAssinada,$configJson,$certificado,$senha,$tpAmb);
+		$recibo = enviaNfe($xmlAssinada,$configJson,$certificado,$senha,$tpAmb);
 		$urlRecibo = 'pdvs/'.$pontoVenda->nome.'/nfe/nfe'.strval($pedido->id).$PastaNFe.'/nfe'.strval($pedido->id).'-Recibo.xml';
-		Storage::put($urlRecibo, $recibo);*/
+		Storage::put($urlRecibo, $recibo);
 		
 	//	danfe($xmlAssinada);
 		
 	//	print_r($recibo);
 		
-		//if(DB::table('nf')->insert(['id_pedido' => $pedido->id , 'status' => 1, 'xmlAss' => $urlXmlAssinada,'recibo' => $urlRecibo,'tipo' => $tipoNFeDB]))
-			if(DB::table('nf')->insert(['id_pedido' => $pedido->id , 'status' => 1, 'xmlAss' => $urlXmlAssinada,'tipo' => $tipoNFeDB]))
+		
+			//if(DB::table('nf')->insert(['id_pedido' => $pedido->id , 'status' => 1, 'xmlAss' => $urlXmlAssinada,'tipo' => $tipoNFeDB]))
+			if(DB::table('nf')->insert(['id_pedido' => $pedido->id , 'status' => 1, 'xmlAss' => $urlXmlAssinada,'recibo' => $urlRecibo,'tipo' => $tipoNFeDB]))
 			return true;
 		else
 			return false;
@@ -677,15 +717,17 @@ function nfe($idPontoVenda,$aP,$idPedido,$tipoNFe){
 	function danfe($xml)
 	{
 		try {
-			$danfe = new Danfe($xml, 'P', 'A4', 'images/logo.jpg', 'I', '');
+			$danfe = new Danfe($xml, 'P', 'A4', '', 'S', '');
     $id = $danfe->montaDANFE();
     $pdf = $danfe->render();
+	
+	return $pdf;
     //o pdf porde ser exibido como view no browser
     //salvo em arquivo
     //ou setado para download forçado no browser 
     //ou ainda gravado na base de dados
-    header('Content-Type: application/pdf');
-    echo $pdf;
+    //header('Content-Type: application/pdf');
+    //echo $pdf;
 			} catch (InvalidArgumentException $e) {
 			echo "Ocorreu um erro durante o processamento :" . $e->getMessage();
 		}    

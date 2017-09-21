@@ -3,8 +3,9 @@
 	namespace App\Http\Controllers;
 	
 	use Illuminate\Http\Request;
-	
+	use Illuminate\Support\Facades\Storage;
 	use Illuminate\Support\Facades\DB;
+	
 	use App\Produto;
 	use App\Pedido;
 	use App\PontoVenda;
@@ -12,13 +13,13 @@
 	use App\Helpers\HeaderFunctions;
 	
 	use NFePHP\NFe\Tools;
+	use NFePHP\NFe\Complements;
 	use NFePHP\Common\Certificate;
 	use NFePHP\Common\Soap\SoapCurl;
 	use NFePHP\NFe\Make;
-	
 	use NFePHP\DA\NFe\Danfe;
 	
-	use Illuminate\Support\Facades\Storage;
+
 	
 	
 	class GetsController extends Controller
@@ -41,9 +42,40 @@
 		
 		public function nf(Request $request)
 		{
-				$idPontoVenda = 1;
-				$Produtos[] = array('id' => 1,'qtde' => '1');
-				nfe($idPontoVenda,$Produtos);			
+		$uri = 'http://localhost/http.php';
+		$usuarioSenha = '16f5eb7c2cb167556af5aceabdddcbd5:';
+		$us8 = utf8_encode($usuarioSenha);
+		$us64 = base64_encode($us8);
+		echo $us8.'<br>'.$us64;
+		
+		
+
+		/*
+//curl_setopt($ch, CURLOPT_URL, "https://api.iugu.com/v1/invoices");
+$campos = '{"email":"Contafarma","due_date":"2017-09-22","items":[{"quantity":45,"description":"zoop variados","price_cents":4.19}],"payer":{"cpf_cnpj":"08671558924","name":"Joao da Silva","phone_prefix":"11","phone":"33244578","email":"joao@example.com","address":{"zip_code":"80230090","street":"Brasil","number":"46","district":"Centro","city":"Curitiba","state":"PR","country":"Brasil","complement":"Casa"}}}';
+$camposEnvia = json_encode($campos);
+
+var_dump($campos);
+echo'<br>';
+var_dump($camposEnvia);
+  //criando o recurso cURL 
+  $cr = curl_init();
+  //definindo a url de busca 
+  curl_setopt($cr, CURLOPT_URL, "https://api.iugu.com/v1/invoices"); 
+  //definindo a url de busca 
+  curl_setopt($cr, CURLOPT_RETURNTRANSFER, true); 
+  
+  curl_setopt($cr, CURLOPT_POST, TRUE);
+
+  curl_setopt($cr, CURLOPT_POSTFIELDS, $campos);
+
+ //definindo uma variável para receber o conteúdo da página... 
+  $retorno = curl_exec($cr); 
+  //fechando-o para liberação do sistema. 
+  curl_close($cr); 
+  //fechamos o recurso e liberamos o sistema...
+  //mostrando o conteúdo... 
+  var_dump($retorno);*/
 		}
 		
 		public function usuarios(Request $request)
@@ -79,7 +111,7 @@
 			$produtos = Produto::join('estoque_repositor','produtos.id','=','estoque_repositor.id_produto')->where('estoque_repositor.id_user', $idUser)->select('produtos.*','estoque_repositor.estoque as estoque')->get();
 			$pontovendas = PontoVenda::all();
 			//$pedidos = Pedido::join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->join('users','pedidos.id_repositor','=','users.id')->select('produtos.nome as produto','produtos.modelo as modelo','pedido_produtos.qtde as qtde','users.name as repositor','pedidos.*')->get();
-			//$pedidos = Pedido::join('users','pedidos.id_repositor','=','users.id')->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->select('pedido_produtos.qtde as qtde','pedido_produtos.id_pedido as id_pedido','users.name as repositor','pedidos.*')->groupBy('repositor')->pluck('repositor');;
+			//$pedidos = Pedido::join('users','pedidos.id_repositor','=','users.id')->join('ponto_vendas','pedidos.id_pdv','=','ponto_vendas.id')->leftJoin('nf','pedidos.id','=','nf.id_pedido')->select('users.name as repositor','pedidos.*','ponto_vendas.nome as ponto_venda','ponto_vendas.id as id_pontovenda','nf.status as nf')->groupBy('nf.id_pedido')->orderBy('pedidos.id')->get();
 			$pedidos = Pedido::join('users','pedidos.id_repositor','=','users.id')->select('users.name as repositor','pedidos.*')->get();
 			return view('dashboard.pedidos',['produtos'=> $produtos, 'pedidos' => $pedidos, 'pontovendas' => $pontovendas]);
 		}
