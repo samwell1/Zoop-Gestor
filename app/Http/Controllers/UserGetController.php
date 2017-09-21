@@ -33,7 +33,7 @@ class UserGetController extends Controller
 			//$produtos->quantidade;
 			//$totalProdutos = $produtosEstoque + $produtosVendendo;
 			//return view('home',['produtosEstoque' => $produtosEstoque,'produtosVendendo' => $produtosVendendo, 'totalProdutos' => $totalProdutos]);
-			$pontosVenda = PontoVenda::where('user_id', $idUser)->join('cidades', 'ponto_vendas.cidade', '=', 'cidades.id')->leftJoin('estoque_pontovenda','ponto_vendas.id','=','estoque_pontovenda.id_pontovenda')->join('status','ponto_vendas.status','=','status.id')->select('ponto_vendas.*','cidades.nome as cidade','estoque_pontovenda.id_pontovenda as pdv',DB::raw('SUM(estoque_pontovenda.estoque) as estoque'),'status.nome as status')->groupBy('pdv')->get();
+			$pontosVenda = PontoVenda::where('user_id', $idUser)->join('cidades', 'ponto_vendas.cidade', '=', 'cidades.id')->leftJoin('estoque_pontovenda','ponto_vendas.id','=','estoque_pontovenda.id_pontovenda')->join('status','ponto_vendas.status','=','status.id')->select('ponto_vendas.*','cidades.nome as cidade','estoque_pontovenda.id_pontovenda as pdv',DB::raw('SUM(estoque_pontovenda.estoque) as estoque'),'status.nome as status')->groupBy('ponto_vendas.id')->orderBy('status.id')->get();
 			//$pontosVenda = PontoVenda::where('user_id', $idUser)->join('cidades', 'ponto_vendas.cidade', '=', 'cidades.id')->join('status','ponto_vendas.status','=','status.id')->select('ponto_vendas.*','cidades.nome as cidade','status.nome as status')->get();
 			$produtos = Produto::join('estoque_repositor','produtos.id','=','estoque_repositor.id_produto')->where('estoque_repositor.id_user', $idUser)->select('produtos.*','estoque_repositor.estoque as estoque')->get();
 			return view('repositor.pontosdeVenda', ['id' => $idUser,'pontosvenda' => $pontosVenda,'produtos' => $produtos]);
@@ -49,7 +49,7 @@ class UserGetController extends Controller
 			$pontovendas = PontoVenda::where('user_id',$idUser)->where('status',1)->get();
 			//$pedidos = Pedido::join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->join('users','pedidos.id_repositor','=','users.id')->select('produtos.nome as produto','produtos.modelo as modelo','pedido_produtos.qtde as qtde','users.name as repositor','pedidos.*')->get();
 			//$pedidos = Pedido::join('users','pedidos.id_repositor','=','users.id')->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->select('pedido_produtos.qtde as qtde','pedido_produtos.id_pedido as id_pedido','users.name as repositor','pedidos.*')->groupBy('repositor')->pluck('repositor');;
-			$pedidos = Pedido::where('pedidos.id_repositor', $idUser)->join('users','pedidos.id_repositor','=','users.id')->join('ponto_vendas','pedidos.id_pdv','=','ponto_vendas.id')->select('users.name as repositor','pedidos.*','ponto_vendas.nome as ponto_venda')->get();
+			$pedidos = Pedido::where('pedidos.id_repositor', $idUser)->join('users','pedidos.id_repositor','=','users.id')->join('ponto_vendas','pedidos.id_pdv','=','ponto_vendas.id')->leftJoin('nf','pedidos.id','=','nf.id_pedido')->select('users.name as repositor','pedidos.*','ponto_vendas.nome as ponto_venda','ponto_vendas.id as id_pontovenda','nf.status as nf')->groupBy('nf.id_pedido')->orderBy('pedidos.id')->get();
 			return view('repositor.pedidos',['produtos'=> $produtos, 'pedidos' => $pedidos, 'pontovendas' => $pontovendas]);
 		}
 		

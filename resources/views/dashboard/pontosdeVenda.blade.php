@@ -24,6 +24,7 @@
 						<th>Região/Bairro</th>
 						<th>Cidade</th>
 						<th>Cadastrado por</th>
+						<th>Estoque</th>
 						<th>Status</th>
 						<th>Ações</th>
 					</thead>
@@ -43,6 +44,11 @@
 							<td>{{$pontovenda->regiao}}</td>
 							<td>{{$pontovenda->cidade}}/{{$pontovenda->estado}}</td>
 							<td>{{$pontovenda->repositor}}</td>
+							@if($pontovenda->estoque == null)
+							<td>0</td>
+							@else
+							<td>{{$pontovenda->estoque}}</td>
+							@endif
 							@if($pontovenda->status == 'Ativo')
 							<td><button type="button" rel="tooltip" title="Ponto de venda ativado" class="btn btn-success btn-simple btn-xs"> 
 									<i class="fa fa-circle"></i> {{$pontovenda->status}}

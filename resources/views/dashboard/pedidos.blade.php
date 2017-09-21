@@ -32,6 +32,14 @@
 						<th>Ações</th>
 					</thead>
 					<tbody>
+					@if(count($pedidos) === 0 )
+						<tr><td>
+							<h3>
+								Nenhum pedido cadastrado
+							</h3>
+						</td>
+						</tr>
+						@endif
 						@foreach($pedidos as $pedido)
 						<tr>
 							<td>{{$pedido->id}}</td>

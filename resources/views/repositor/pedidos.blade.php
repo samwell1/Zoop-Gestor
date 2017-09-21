@@ -50,17 +50,26 @@
 								<a href="{{ URL::to('user/pedido/' . $pedido->id) }}"><button type="button" rel="tooltip" title="Visualizar" class="btn btn-danger btn-simple btn-xs delete">
 									<i class="material-icons">pageview</i>
 								</button></a>
-								<form action="{{ URL::to('user/pedido/' . $pedido->id.'/nf') }}" method="POST">
+								@if($pedido->nf != null || $pedido->nf != '')
+								<form action="{{ URL::to('user/pedido/' . $pedido->id.'/enviNfe') }}" method="POST">
 								{{ csrf_field() }}
 								<input type="hidden" value="{{$pedido->id}}" name="idPedido">
-								<button type="submit" rel="tooltip" title="Emitir NFe" class="btn btn-primary btn-simple btn-xs">
-									<i class="material-icons">edit</i>
+								<input type="hidden" value="{{$pedido->id_pontovenda}}" name="idPdv">
+								<button type="submit" rel="tooltip" title="Enviar NF-e" class="btn btn-success btn-simple btn-xs ">
+									<i class="material-icons">send</i>
 								</button>
 								</form>
-								<button type="button" rel="tooltip" title="Deletar" class="btn btn-danger btn-simple btn-xs delete">
-									<i class="material-icons">close</i>
+								@else
+								<form action="{{ URL::to('user/pedido/' . $pedido->id.'/emitNfe') }}" method="POST">
+								{{ csrf_field() }}
+								<input type="hidden" value="{{$pedido->id}}" name="idPedido">
+								<input type="hidden" value="{{$pedido->id_pontovenda}}" name="idPdv">
+								<button type="submit" rel="tooltip" title="Emitir NF-e" class="btn btn-info btn-simple btn-xs">
+									<i class="material-icons">assignment</i>
 								</button>
-							</td>
+								</form>
+								@endif
+						</td>
 						</tr>
 						@endforeach
 					</tbody>
@@ -76,8 +85,25 @@
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">Cadastrar produto</h4>
+				<h4 class="modal-title" id="myModalLabel">Realizar pedido</h4>
 			</div>
+			@if(count($pontovendas) == 0)
+				<div class="modal-body">
+					<div class="row">
+					<div class="col-md-12">
+					<h3>Nenhum <b>Ponto de Venda</b> cadastrado. <a href="{{route('user_pdv')}}">Cadastre</a> um antes de realizar um pedido.</h3>
+					</div>
+					</div>
+					</div>
+			@elseif(count($produtos) == 0)
+			<div class="modal-body">
+					<div class="row">
+					<div class="col-md-12">
+					<h3>Você <b>NÃO</b> possui  estoque. Contato um administrador <b>ZOOP</b>.</h3>
+					</div>
+					</div>
+					</div>
+			@else
 			<form enctype="multipart/form-data" action="{{route('cadastrar_pedido')}}"  method="POST">
 				{{ csrf_field() }}
 				<div class="modal-body">
@@ -107,7 +133,7 @@
 						<div class="col-md-4" >
 							<div class="form-group label-floating">
 								<label class="control-label">Quantidade</label>
-								<input type="number" name="qtde[]" class="form-control" value="1">
+								<input type="number" name="qtde[]" class="form-control" value="1" min="1" max="{{$produto->estoque}}" required/>
 							</div>
 						</div>
 					</div>
@@ -120,10 +146,11 @@
 					<div class="clearfix"></div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
-					<button type="submit" class="btn btn-primary">Cadastrar</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+					<button type="submit" class="btn btn-primary">Confirmar</button>
 				</div>
 			</form>
+			@endif
 		</div>
 	</div>
 </div>

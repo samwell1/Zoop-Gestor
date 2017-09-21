@@ -34,6 +34,7 @@
 						<th>Ações</th>
 					</thead>
 					<tbody>
+						
 						@if(count($pontosvenda) === 0 )
 						<tr><td>
 							<h3>
@@ -61,6 +62,9 @@
 								<a href="{{ URL::to('user/pdv/' . $pontovenda->id) }} "><button type="button" rel="tooltip" title="Visualizar" class="btn btn-danger btn-simple btn-xs delete">
 									<i class="material-icons">pageview</i>
 								</button></a>
+								@if(count($produtos) > 1 )
+								<button type="button" class="btn btn-default clonador"><i class="fa fa-plus"></i> Produto</button>
+								@endif
 								<button type="button"
 								class="btn btn-info btn-fill"  data-toggle="modal" data-target="#myModal{{$pontovenda->id}}">Abastecer Estoque</button>
 							</td>
@@ -95,6 +99,15 @@
 										<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 										<h4 class="modal-title" id="myModalLabel">Abastecer Estoque</h4>
 									</div>
+									@if(count($produtos) == 0)
+									<div class="modal-body">
+										<div class="row">
+											<div class="col-md-12">
+												<h3>Você <b>NÃO</b> possui  estoque. Contato um administrador <b>ZOOP</b>.</h3>
+											</div>
+										</div>
+									</div>
+									@else
 									<form enctype="multipart/form-data" action="{{route('cadastrar_pedido')}}"  method="POST">
 										{{ csrf_field() }}
 										<div class="modal-body">
@@ -130,6 +143,7 @@
 											<button type="submit" class="btn btn-primary">Concluir</button>
 										</div>
 									</form>
+									@endif
 								</div>
 							</div>
 						</div>
@@ -184,19 +198,19 @@
 						<div class="col-md-4">
 							<div class="form-group label-floating">
 								<label class="control-label">Nome</label>
-								<input type="text" name="nome" class="form-control" >
+								<input type="text" name="nome" class="form-control" required/>
 							</div>
 						</div>
 						<div class="col-md-4">
 							<div class="form-group label-floating">
 								<label class="control-label">CNPJ</label>
-								<input type="text" name="cnpj" class="form-control" >
+								<input type="text" name="cnpj" class=" cnpj form-control" required/>
 							</div>
 						</div>
 						<div class="col-md-4">
 							<div class="form-group label-floating">
 								<label class="control-label">CEP</label>
-								<input type="text" name="cep" class="form-control" >
+								<input type="text" name="cep" class="cep form-control" required/>
 							</div>
 						</div>
 						
@@ -205,25 +219,25 @@
 						<div class="col-md-4">
 							<div class="form-group label-floating">
 								<label class="control-label">Endereço</label>
-								<input type="text" name="endereco" class="form-control" >
+								<input type="text" name="endereco" class="form-control" required/>
 							</div>
 						</div>
 						<div class="col-md-2">
 							<div class="form-group label-floating">
 								<label class="control-label">Nº</label>
-								<input type="text" name="numero" class="form-control" >
+								<input type="text" name="numero" class="form-control" required/>
 							</div>
 						</div>
 						<div class="col-md-3">
 							<div class="form-group label-floating">
 								<label class="control-label">Bairro/Região</label>
-								<input type="text" name="regiao" class="form-control" >
+								<input type="text" name="regiao" class="form-control" required/>
 							</div>
 						</div>
 						<div class="col-md-3">
 							<div class="form-group label-floating">
 								<label class="control-label">Telefone</label>
-								<input type="text" name="telefone" class="form-control" >
+								<input type="text" name="telefone" class="fone form-control" required/>
 							</div>
 						</div>
 						
@@ -231,21 +245,21 @@
 					
 					<div class="row">
 						<div class="col-md-4">
-							<div class="form-group label-floating">
+							<div class="form-group label">
 								<label class="control-label">UF</label>
-								<select id="uf" name="estado" class="uf form-control"></select>
+								<select id="uf" name="estado" class="uf form-control" required/></select>
 							</div>
 						</div>
 						<div class="col-md-4">
-							<div class="form-group label-floating">
+							<div class="form-group label">
 								<label class="control-label">Cidade</label>
-								<select id="cidade" name="cidade" class="cidade form-control"></select>
+								<select id="cidade" name="cidade" class="cidade form-control" required/></select>
 							</div>
 						</div>
 						<div class="col-md-4">
-							<div class="form-group label-floating">
+							<div class="form-group label">
 								<label class="control-label">Email</label>
-								<input type="text" name="email" class="form-control" >
+								<input type="text" name="email" class="form-control" required/>
 							</div>
 						</div>
 					</div>
@@ -253,7 +267,7 @@
 					<div class="clearfix"></div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
 					<button type="submit" class="btn btn-primary">Cadastrar</button>
 				</div>
 			</form>
@@ -263,8 +277,26 @@
 @endsection
 
 @section('post-script')
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.11/jquery.mask.js"></script>
 <script src="/vendor/artesaos/cidades/js/scripts.js"></script>
+
+<script>
+	$(document).ready(function(){
+		var maskBehavior = function (val) {
+			return val.replace(/\D/g, '').length === 11 ? '(00) 00000-0000' : '(00) 0000-00009';
+		},
+		options = {onKeyPress: function(val, e, field, options) {
+			field.mask(maskBehavior.apply({}, arguments), options);
+		}
+		};
+		
+		$('.fone').mask(maskBehavior, options);
+		$('.cep').mask('00000-000');
+		//$('.cpf').mask('000.000.000-00', {reverse: true});
+		$('.cnpj').mask('00.000.000/0000-00', {reverse: true});
+		
+	});
+</script>
 
 <script>
 	$('.uf').ufs({
@@ -275,30 +307,21 @@
 </script>
 
 <script>
-	$(".delete").on("submit", function(){
-		return confirm("Tem certeza que deseja deletar este item?");
-	});
-</script>
-
-<script>
-	$(".delete").on("submit", function(){
-		return confirm("Tem certeza que deseja deletar este item?");
-	});
 	
-$('.clonador').click(function(){
-//clona o modelo oculto, clone(true) para copiar também os manipuladores de eventos
-$clone = $('.produtos.hiden').clone(true);
-//remove a classe que oculta o modelo do elemento clonado
-$clone.removeClass('hiden');
-
-//adiciona no form
-$('.local').append($clone);
-
-});
-//Para remover
-$('.btn_remove').click(function(){
-$(this).parents('.produtos').remove();
-});
+	$('.clonador').click(function(){
+		//clona o modelo oculto, clone(true) para copiar também os manipuladores de eventos
+		$clone = $('.produtos.hiden').clone(true);
+		//remove a classe que oculta o modelo do elemento clonado
+		$clone.removeClass('hiden');
+		
+		//adiciona no form
+		$('.local').append($clone);
+		
+	});
+	//Para remover
+	$('.btn_remove').click(function(){
+		$(this).parents('.produtos').remove();
+	});
 </script>
 
 

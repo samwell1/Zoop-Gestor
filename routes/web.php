@@ -83,7 +83,11 @@
 	//Inicio POST's USER
 	Route::post('/user_cadastrar_pdv', 'UserPostController@cadastrarPdv')->name('user_cadastrar_pdv');
 	
-	Route::post('/user/pedido/{id}/nf', 'UserPostController@nfepedido');
+	Route::post('/user/pedido/{id}/emitNfe', 'UserPostController@emitNfe');
+	
+	Route::post('/user/pedido/{id}/enviNfe', 'UserPostController@enviNfe');
+	
+	
 	//Fim
 	
 	//Inicio Funcoes

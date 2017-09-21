@@ -22,6 +22,7 @@ class PontoVendaTableSeeder extends Seeder
 			$pontoVenda->email = 'contato@contafarma.com.br';
 			$pontoVenda->estado = 'PR';
 			$pontoVenda->cidade = 6015;
+			$pontoVenda->max_estoque = 50;
 			$pontoVenda->user_id = 2;
 			$pontoVenda->status = 1;
 			$pontoVenda->save();

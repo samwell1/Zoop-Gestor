@@ -51,11 +51,12 @@
 								</div>
 								<div class="card-content">
 									<h4 class="title">Vendas semanais</h4>
-									<p class="category"><span class="text-success"><i class="fa fa-long-arrow-up"></i> 55%  </span> increase in today sales.</p>
+									<p class="category"><span class="text-success"><i class="fa fa-long-arrow-up"></i> 10%  </span>de crescimento.</p>
 								</div>
 								<div class="card-footer">
 									<div class="stats">
-										<i class="material-icons">access_time</i> updated 4 minutes ago
+										<i class="material-icons text-danger">warning</i> Gráfico em testes
+										<i class="material-icons">access_time</i> atualizado 30 minutos atrás
 									</div>
 								</div>
 								</div>

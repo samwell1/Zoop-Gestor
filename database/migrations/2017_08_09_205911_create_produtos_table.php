@@ -20,6 +20,7 @@ class CreateProdutosTable extends Migration
 			$table->string('imagem');
 			$table->integer('quantidade');
 			$table->float('preco');
+			$table->float('peso');
             $table->string('codigo')->unique();
 			$table->string('cean')->nullable();
 			$table->string('ncm')->nullable();

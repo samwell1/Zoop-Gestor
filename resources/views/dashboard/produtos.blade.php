@@ -23,6 +23,7 @@
 						<th>Código</th>
 						<th>Nome</th>
 						<th>Modelo</th>
+						<th>Peso</th>
 						<th>Estoque</th>
 						<th>Preço Unitário</th>
 						<th>Ações</th>
@@ -44,6 +45,7 @@
 							<td>{{$produto->codigo}}</td>
 							<td>{{$produto->nome}}</td>
 							<td>{{$produto->modelo}}</td>
+							<td>{{$produto->peso}}</td>
 							<td>{{$produto->quantidade}}</td>
 							<td>{{formata_dinheiro($produto->preco)}}</td>
 							<td class="td-actions text-right">

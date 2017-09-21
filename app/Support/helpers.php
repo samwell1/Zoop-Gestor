@@ -26,22 +26,69 @@
 		return "R$ " . $valor;
 	}
 	
+	function formata_numero($valor) {
+		$valor = number_format($valor, 2, '.', '');
+		return $valor;
+	}
+	
 	function formata_valor($valor) {
 		$valorFormatado = str_replace(",", ".", $valor);
 		return $valorFormatado;
 	}
 	
-	function nfe($idPedido){
-	$pedido = Pedido::where('pedidos.id', $idPedido)->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('ponto_vendas','pedidos.id_pdv','=','ponto_vendas.id')->select('pedido_produtos.qtde as qtde','pedidos.*','ponto_vendas.id as id_pontovenda')->first();
-	//$produtos = Pedido::where('pedidos.id', $idPedido)->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->select('produtos.nome as nome','produtos.modelo as modelo','produtos.codigo as codigo','pedido_produtos.qtde as qtde','produtos.id as id_produto','produtos.preco as preco')->get();
-	$produtos = DB::table('pedido_produtos')->where('pedido_produtos.id_pedido', $idPedido)->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->select('produtos.nome as nome','produtos.modelo as modelo','produtos.codigo as codigo','pedido_produtos.qtde as qtde','produtos.id as id_produto','produtos.preco as preco')->get();
-		$nfe = Make::v310();
-		
+function nfe($idPontoVenda,$aP,$idPedido,$tipoNFe){
+ 	$nfe = Make::v310();
+ 	//Ambiente de Emissão: PRODUÇÃO = 1; HOMOLOGAÇÃO = 2;
+		$tpAmb = '2';
 		$nfe->taginfNFe('31110219570803000100550030000006821169793597');
-		$serie = 18;
+		
+		$pedido = Pedido::where('pedidos.id', $idPedido)->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('ponto_vendas','pedidos.id_pdv','=','ponto_vendas.id')->select('pedido_produtos.qtde as qtde','pedidos.*','ponto_vendas.id as id_pontovenda')->first();
+		
+    	$produtos = DB::table('pedido_produtos')->where('pedido_produtos.id_pedido', $idPedido)->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->select('produtos.nome as nome','produtos.modelo as modelo','produtos.codigo as codigo','pedido_produtos.qtde as qtde','produtos.id as id_produto','produtos.preco as preco','pedido_produtos.id_produto as id_prod_ped','produtos.peso as peso')->get();
+		
+		$lastNFe = DB::table('nf')->select('id')->orderBy('id','desc')->first();
+		if(count($lastNFe) == 0 || count($lastNFe) == null)
+		$nNF = 1;
+		else
+		$nNF = ($lastNFe->id + 1);
+		
+		
+	switch($tipoNFe){
+			    //envioRemessaPR
+			    case 1:
+			     $CFOPp = '5917';   
+				 $natOp = 'Remessa de mercadoria em consignação mercantil ou industrial';
+			    break;
+			    //envioRemessaOut
+			    case 2:
+			     $CFOPp = '6917';   
+				 $natOp = 'Remessa de mercadoria em consignação mercantil ou industrial';
+			    break;
+			    //retornoRemessaPR
+			    case 3:
+			     $CFOPp = '1918';   
+				 $natOp = 'Devolução de mercadoria remetida em consignação mercantil ou industrial';
+			    break;
+			    //retornoRemessaOut
+			    case 4:
+			     $CFOPp = '2918';   
+				 $natOp = 'Devolução de mercadoria remetida em consignação mercantil ou industrial';
+			    break;
+			    //vendaPR
+			    case 5:
+			     $CFOPp = '5102';   
+				 $natOp = 'Venda de mercadoria adquirida ou recebida de terceiros';
+			    break;
+			    //vendaOut
+			    case 6:
+			     $CFOPp = '6102';   
+				 $natOp = 'Venda de mercadoria adquirida ou recebida de terceiros';
+			    break;
+			}
+			
 		//$nfe->tagide($cUF, $cNF, $natOp, $indPag, $mod, $serie, $nNF, $dhEmi, $dhSaiEnt, $tpNF, $idDest, $cMunFG, $tpImp, $tpEmis, $cDV, $tpAmb, $finNFe, $indFinal, $indPres, $procEmi, $verProc, $dhCont, $xJust);
 		
-		$nfe->tagide(41,00000010,'Consignação de Produto',1,55,1,$serie,date("Y-m-d\TH:i:sP"),date("Y-m-d\TH:i:sP"),1,1,'4106902',1,1,2,2,1,1,9,0,'4.0.43','','');
+		$nfe->tagide(41,00000010,$natOp,1,55,1,$nNF,date("Y-m-d\TH:i:sP"),date("Y-m-d\TH:i:sP"),1,1,'4106902',1,1,2,$tpAmb,1,1,9,0,'4.0.43','','');
 		
 		$CNPJ = '26849873000167';
 		$CPF = ''; // Utilizado para CPF na nota
@@ -50,7 +97,7 @@
 		$IE = '9073949480';
 		$IEST = '';
 		$IM = '';
-		$CNAE = '4759899';//Necessário
+		$CNAE = '';
 		$CRT = 1;
 		
 		$nfe->tagemit($CNPJ, $CPF, $xNome, $xFant, $IE, $IEST, $IM, $CNAE, $CRT);
@@ -69,16 +116,14 @@
 		$fone = '34020106';
 		$nfe->tagenderEmit($xLgr, $nro, $xCpl, $xBairro, $cMun, $xMun, $UF, $CEP, $cPais, $xPais, $fone);
 		
-		
 		$pontoVenda = PontoVenda::find($pedido->id_pontovenda);
 		
 		//destinatÃ¡rio
 		$CNPJ = $pontoVenda->cnpj;
 		$CPF = '';
 		$idEstrangeiro = '';
-		$xNome = 'Joao Farmacionas';
+		$xNome = $pontoVenda->nome;
 		$indIEDest = '1';
-		//$IE = '9065819144';
 		$IE = $pontoVenda->ie;
 		$ISUF = $pontoVenda->isuf;
 		$IM = $pontoVenda->im;
@@ -128,64 +173,50 @@
 			'xPed' => '16',
 			'nItemPed' => '1',
 		'nFCI' => '');*/
-		$ItemPed = 1;
-		$vTotalProd = 0;
-		//produtos 2        
+		$sItem = 1;
+		$vTotalPedido = 0;
+		$qTotalPedido = 0;
+		$pesoTotalPedido = 0;
+		$qComq = '0';
 		foreach ($produtos as $prod) {
 			$produto = Produto::find($prod->id_produto);
-			$nItem = $ItemPed;
+			$nItem = $sItem;
 			$cProd = $produto->codigo;
-			$cEAN = '97899072659522';
+			$cEAN = '7895099315424';
 			$xProd = $produto->nome.' - '.$produto->modelo;
-			$NCM = '22030000';
+			$NCM = '39249000';
+			//$NCM = '22030000';
 			$EXTIPI = '';
-			$CFOP = '5101';
+			$CFOP = $CFOPp;
 			$uCom = 'Un';
-			$qCom = $prod->qtde;
-			$vUnCom = $produto->preco;
-			$vProd = $produto->preco * $prod->qtde;
+			if($tipoNFe == 1 || $tipoNFe == 2){
+		//Envio
+		$qComq = strval($pontoVenda->max_estoque);
+		}else if($tipoNFe == 3 || $tipoNFe == 4){
+		//Retorno
+		$qComq = strval($pontoVenda->max_estoque - $prod->qtde);
+		}else if($tipoNFe == 5 || $tipoNFe == 6){
+		//Venda
+		$qComq = strval($prod->qtde);
+		}
+			$qCom = $qComq;//'10';
+			$vUnCom = number_format($produto->preco, 2 ,'.','');//'4.19';
+			$vProd = number_format(($prod->qtde * $produto->preco), 2 ,'.','');//'41.90';
 			$cEANTrib = '';
-			$uTrib = '';
-			$qTrib = '120';
-			$vUnTrib = '7.00';
+			$uTrib = 'Un';
+			$qTrib = strval($prod->qtde);
+			$vUnTrib = number_format($produto->preco, 2 ,'.','');//'4.19';
 			$vFrete = '';
 			$vSeg = '';
 			$vDesc = '';
 			$vOutro = '';
 			$indTot = '1';
-			$xPed = '15';
-			$nItemPed = strval($nItem);
+			$xPed = strval($pedido->id);
+			$nItemPed = strval($prod->id_prod_ped);
 			$nFCI = '';
-			
-		/*
-			$produto = Produto::find(1);
-			$nItem = 1;
-			$cProd = $produto->codigo;
-			$cEAN = '97899072659522';
-			$xProd = $produto->nome.' - '.$produto->modelo;
-			$NCM = '22030000';
-			$EXTIPI = '';
-			$CFOP = '5101';
-			$uCom = 'Un';
-			$qCom = $prod['qtde'];
-			$vUnCom = strval($produto->preco);
-			$vProd = strval($prod['qtde'] * $produto->preco);
-			$cEANTrib = '';
-			$uTrib = 'Lt';
-			$qTrib = '120';
-			$vUnTrib = '7.00';
-			$vFrete = '';
-			$vSeg = '';
-			$vDesc = '';
-			$vOutro = '';
-			$indTot = '1';
-			$xPed = '15';
-			$nItemPed = strval($nItem);
-			$nFCI = '';
-			*/
 			
 			$resp = $nfe->tagprod($nItem, $cProd, $cEAN, $xProd, $NCM, $EXTIPI, $CFOP, $uCom, $qCom, $vUnCom, $vProd, $cEANTrib, $uTrib, $qTrib, $vUnTrib, $vFrete, $vSeg, $vDesc, $vOutro, $indTot, $xPed, $nItemPed, $nFCI);
-		
+
 		
 		/*foreach ($aP as $prod) {
 			$produto = Produto::find(1);
@@ -219,38 +250,49 @@
 		/*$nItem = 1; //produtos 1
 			$vDesc = 'Barril 30 Litros Chopp Tipo Pilsen - Pedido NÂº15';
 		$resp = $nfe->taginfAdProd($nItem, $vDesc);*/
-		$nItem = $ItemPed; //produtos 2
-		$vDesc = 'Caixa com 1000 unidades';
-		$nfe->taginfAdProd($nItem, $vDesc);
+		
+		//$nItem = $sItem; //produtos 2
+		//$vDesc = 'Caixa com 1000 unidades';
+		//$nfe->taginfAdProd($nItem, $vDesc);
 		
 		//Impostos
-		$nItem = $ItemPed; //produtos 1
-		$vTotTrib = '50.40'; // 226.80 ICMS + 51.50 ICMSST + 50.40 IPI + 39.36 PIS + 81.84 CONFIS
+		$nItem = $sItem; //produtos 1
+		$vTotTrib = '0.00'; // 226.80 ICMS + 51.50 ICMSST + 50.40 IPI + 39.36 PIS + 81.84 CONFIS
 		$nfe->tagimposto($nItem, $vTotTrib);
 		
-		//ICMS - Imposto sobre CirculaÃ§Ã£o de Mercadorias e ServiÃ§os
-		$nItem = $ItemPed; //produtos 1
-		$orig = '0';
-		$cst = '102'; // Tributado Integralmente
-		$modBC = '3';
-		$pRedBC = '';
-		$vBC = $qTrib * $vUnTrib; // = $qTrib * $vUnTrib
-		$pICMS = '27.00'; // AlÃ­quota do Estado de GO p/ 'NCM 2203.00.00 - Cervejas de Malte, inclusive Chope'
-		$vICMS = $vBC * ( $pICMS / 100 ); // = $vBC * ( $pICMS / 100 )
-		$vICMSDeson = '';
-		$motDesICMS = '';
-		$modBCST = '';
-		$pMVAST = '';
-		$pRedBCST = '';
-		$vBCST = '';
-		$pICMSST = '';
-		$vICMSST = '';
-		$pDif = '';
-		$vICMSDif = '';
-		$vICMSOp = '';
-		$vBCSTRet = '';
-		$vICMSSTRet = '';
-		$nfe->tagICMSSN($nItem, $orig, $cst, $modBC, $pRedBC, $vBC, $pICMS, $vICMS, $vICMSDeson, $motDesICMS, $modBCST, $pMVAST, $pRedBCST, $vBCST, $pICMSST, $vICMSST, $pDif);
+		//ICMS - Imposto sobre Circulação de Mercadorias e Serviços
+        $nItem = $sItem; //produtos 1
+        $orig = '0';
+        //$cst = '00'; // Tributado Integralmente
+        $csosn = '102'; // Tributado Integralmente
+        $modBC = '3';
+        $pRedBC = '';
+        $vBC = '0.00'; // = $qTrib * $vUnTrib
+        $pICMS = '0.00'; // Alíquota do Estado de GO p/ 'NCM 2203.00.00 - Cervejas de Malte, inclusive Chope'
+        $vICMS = '0.00'; // = $vBC * ( $pICMS / 100 )
+        $pCredSN = '0';
+        $vCredICMSSN ='0';
+        $vICMSDeson = '';
+        $motDesICMS = '';
+        $modBCST = '';
+        $pMVAST = '';
+        $pRedBCST = '';
+        $vBCST = '';
+        $pICMSST = '';
+        $vICMSST = '';
+        $pDif = '';
+        $vICMSDif = '';
+        $vICMSOp = '';
+        $vBCSTRet = '';
+        $vICMSSTRet = '';
+		
+		//ICMSSN - TributaÃ§Ã£o ICMS pelo Simples Nacional - CST 30
+		$nfe->tagICMSSN($nItem, $orig, $csosn, $modBC, $vBC, $pRedBC, $pICMS, $vICMS, $pCredSN, $vCredICMSSN, $modBCST, $pMVAST, $pRedBCST, $vBCST, $pICMSST, $vICMSST, $vBCSTRet, $vICMSSTRet);
+		
+		
+	//	$nfe->tagICMSSN($nItem, $orig, $cst, $modBC, $pRedBC, $vBC, $pICMS, $vICMS, $vICMSDeson, $motDesICMS, $modBCST, $pMVAST, $pRedBCST, $vBCST, $pICMSST, $vICMSST, $pDif);
+		
+		
 		
 		//ICMS 10
 		
@@ -262,45 +304,43 @@
 		//ICMSST - TributaÃ§Ã£o ICMS por SubstituiÃ§Ã£o TributÃ¡ria (ST) - CST 40, 41, 50 e 51
 		//$resp = $nfe->tagICMSST($nItem, $orig, $cst, $vBCSTRet, $vICMSSTRet, $vBCSTDest, $vICMSSTDest);
 		
-		//ICMSSN - TributaÃ§Ã£o ICMS pelo Simples Nacional - CST 30
-		//$resp = $nfe->tagICMSSN($nItem, $orig, $csosn, $modBC, $vBC, $pRedBC, $pICMS, $vICMS, $pCredSN, $vCredICMSSN, $modBCST, $pMVAST, $pRedBCST, $vBCST, $pICMSST, $vICMSST, $vBCSTRet, $vICMSSTRet);
-		
+
 		//IPI - Imposto sobre Produto Industrializado
-		$nItem = $ItemPed; //produtos 1
-		$cst = '50'; // 50 - SaÃ­da Tributada (CÃ³digo da SituaÃ§Ã£o TributÃ¡ria)
+		$nItem = $sItem; //produtos 1
+		$cst = '99'; // 50 - SaÃ­da Tributada (CÃ³digo da SituaÃ§Ã£o TributÃ¡ria)
 		$clEnq = '';
 		$cnpjProd = '';
 		$cSelo = '';
 		$qSelo = '';
 		$cEnq = '999';
-		$vBC = $vBC ;
-		$pIPI = '6.00'; //Calculo por alÃ­quota - 6% AlÃ­quota GO.
+		$vBC = '0.00';
+		$pIPI = '0.00'; //Calculo por alÃ­quota - 6% AlÃ­quota GO.
 		$qUnid = '';
 		$vUnid = '';
-		$vIPI = $vBC * ( $pIPI / 100 ); // = $vBC * ( $pIPI / 100 )
+		$vIPI = '0.00'; // = $vBC * ( $pIPI / 100 )
 		$nfe->tagIPI($nItem, $cst, $clEnq, $cnpjProd, $cSelo, $qSelo, $cEnq, $vBC, $pIPI, $qUnid, $vUnid, $vIPI);
 		
 		//PIS - Programa de IntegraÃ§Ã£o Social
-		$nItem = $ItemPed; //produtos 1
-		$cst = '07'; //OperaÃ§Ã£o TributÃ¡vel (base de cÃ¡lculo = quantidade vendida x alÃ­quota por unidade de produto)
+		$nItem = $sItem; //produtos 1
+		$cst = '99'; //OperaÃ§Ã£o TributÃ¡vel (base de cÃ¡lculo = quantidade vendida x alÃ­quota por unidade de produto)
 		$vBC = ''; 
 		$pPIS = '';
-		$vPIS = '39.36';
-		$qBCProd = '60.00';
-		$vAliqProd = '0.3280';
+		$vPIS = '0.00';
+		$qBCProd = '0.00';
+		$vAliqProd = '0.0000';
 		$nfe->tagPIS($nItem, $cst, $vBC, $pPIS, $vPIS, $qBCProd, $vAliqProd);
 		
 		//PISST
 		//$resp = $nfe->tagPISST($nItem, $vBC, $pPIS, $qBCProd, $vAliqProd, $vPIS);
 		
 		//COFINS - ContribuiÃ§Ã£o para o Financiamento da Seguridade Social
-		$nItem = $ItemPed; //produtos 1
-		$cst = '07'; //OperaÃ§Ã£o TributÃ¡vel (base de cÃ¡lculo = quantidade vendida x alÃ­quota por unidade de produto)
+		$nItem = $sItem; //produtos 1
+		$cst = '99'; //OperaÃ§Ã£o TributÃ¡vel (base de cÃ¡lculo = quantidade vendida x alÃ­quota por unidade de produto)
 		$vBC = '';
 		$pCOFINS = '';
-		$vCOFINS = '0';
-		$qBCProd = '0';
-		$vAliqProd = '0';
+		$vCOFINS = '0.00';
+		$qBCProd = '0.00';
+		$vAliqProd = '0.000';
 		$nfe->tagCOFINS($nItem, $cst, $vBC, $pCOFINS, $vCOFINS, $qBCProd, $vAliqProd);
 		
 		//COFINSST
@@ -317,9 +357,12 @@
 		
 		//retTrib
 		//$resp = $nfe->tagretTrib($vRetPIS, $vRetCOFINS, $vRetCSLL, $vBCIRRF, $vIRRF, $vBCRetPrev, $vRetPrev);
-		$ItemPed++;
-		$vTotalProd +=  $vProd;
+		$vTotalPedido += ($prod->qtde * $produto->preco);
+		$qTotalPedido += $prod->qtde;
+		$pesoTotalPedido += $produto->peso;
+		$sItem++;
 		}
+		
 		//InicializaÃ§Ã£o de vÃ¡riaveis nÃ£o declaradas...
 		$vII = isset($vII) ? $vII : 0;
 		$vIPI = isset($vIPI) ? $vIPI : 0;
@@ -332,17 +375,17 @@
 		$vISS = isset($vISS) ? $vISS : 0;
 		
 		//total
-		$vBC = '0';
+		$vBC = '0.00';
 		$vICMS = '0';
 		$vICMSDeson = '0.00';
 		$vBCST = '0';
 		$vST = '0';
-		$vProd = $vTotalProd;
+		$vProd = number_format($vTotalPedido, 2 ,'.','');//'41.90';
 		$vFrete = '0.00';
 		$vSeg = '0.00';
 		$vDesc = '0.00';
 		$vII = '0.00';
-		$vIPI = '50.40';
+		$vIPI = '0.00';
 		$vPIS = '0';
 		$vCOFINS = '0';
 		$vOutro = '0.00';
@@ -395,8 +438,7 @@
 		
 		//Dados dos Volumes Transportados
 		$aVol = array(
-		array('4','Pacotes','','','120.000','120.000',''),
-		array('2','Volume','','','10.000','10.000','')
+		array($qTotalPedido,'Unidades','','',intval(number_format($pesoTotalPedido, 2 ,'.','')),intval(number_format($pesoTotalPedido, 2 ,'.','')),'')
 		);
 		foreach ($aVol as $vol) {
 			$qVol = $vol[0]; //Quantidade de volumes transportados
@@ -410,18 +452,16 @@
 		}
 		
 		//dados da fatura
-		$nFat = '000035342';
-		$vOrig = '1200.00';
+		$nFat = $pedido->id;
+		$vOrig = number_format($vTotalPedido, 2 ,'.','');
 		$vDesc = '';
-		$vLiq = '1200.00';
+		$vLiq = number_format($vTotalPedido, 2 ,'.','');
 		$nfe->tagfat($nFat, $vOrig, $vDesc, $vLiq);
 		
 		//dados das duplicatas (Pagamentos)
 		$aDup = array(
-		array('35342-1','2016-06-20','300.00'),
-		array('35342-2','2016-07-20','300.00'),
-		array('35342-3','2016-08-20','300.00'),
-		array('35342-4','2016-09-20','300.00')
+
+		array($pedido->id,date('Y-m-d', strtotime('+5 days')),number_format($vTotalPedido, 2 ,'.',''))
 		);
 		foreach ($aDup as $dup) {
 			$nDup = $dup[0]; //CÃ³digo da Duplicata
@@ -454,7 +494,7 @@
 		//InformaÃ§Ãµes Adicionais
 		//$infAdFisco = "SAIDA COM SUSPENSAO DO IPI CONFORME ART 29 DA LEI 10.637";
 		$infAdFisco = "";
-		$infCpl = "Pedido Nº16 - {$textoIBPT} ";
+		$infCpl = "Pedido Nº".$pedido->id." - {$textoIBPT} ";
 		$nfe->taginfAdic($infAdFisco, $infCpl);
 		
 		$xml = $nfe->getXML();
@@ -469,7 +509,7 @@
 		
 		
 		$config= ["atualizacao"=>"2017-09-06 10:10:20",
-		"tpAmb"=>2,
+		"tpAmb"=>$tpAmb,
 		"razaosocial"=>"V3S COMERCIO E SERVICOS ADMINISTRATIVOS EIRELI ME",
 		"siglaUF"=>"PR",
 		"cnpj"=>"26849873000167",
@@ -487,44 +527,72 @@
 		]
 		];
 		
+ 		$configJson = json_encode($config);
+ 	
 		//Array de configuração dos dados do emitente
 	    $configJson = json_encode($config);
 		//Certificado Digital para emissão das NFe's
 		$certificado = Storage::get('V3S.pfx');
 		//Senha do Certificado Digital para a emissão das NFe's
 		$senha = '12345678';
-		//Ambiente de Emissão: PRODUÇÃO = 1; HOMOLOGAÇÃO = 2;
-		$tpAmb = '2';
-		
+		$PastaNF = '';
+		$tipoNFeDB = 0;
+		if($tipoNFe == 1 || $tipoNFe == 2){
+		//Envio
+		$PastaNFe = '/envioRemessa';
+		$tipoNFeDB = 1;
+		}else if($tipoNFe == 3 || $tipoNFe == 4){
+		//Retorno
+		$PastaNFe = '/retornoRemessa';
+		$tipoNFeDB = 2;
+		}else if($tipoNFe == 5 || $tipoNFe == 6){
+		//Venda
+		$PastaNFe = '/Venda';
+		$tipoNFeDB = 3;
+		}
 		//Assina XML (NFe)
 		$xmlAssinada = assinaNfe($xml,$configJson,$certificado,$senha);
-		$data = date("Y-m-d");
-		Storage::put('nfe/'.$pontoVenda->nome.'/nfeAssinada/nfe'.$serie.$data.'.xml', $xmlAssinada);
+		$urlXmlAssinada = 'pdvs/'.$pontoVenda->nome.'/nfe/nfe'.strval($pedido->id).$PastaNFe.'/nfe'.strval($pedido->id).'-Assinada.xml';
+		Storage::put($urlXmlAssinada, $xmlAssinada);
 		
-		danfe($xml);
-
-        		//Envia XML (NFe) para a SEFAZ e retorna o Status do XML
-	//	$recibo = enviaNfe($xmlAssinada,$configJson,$certificado,$senha,$tpAmb);
+        //Envia XML (NFe) para a SEFAZ e retorna o Status do XML
+	/*	$recibo = enviaNfe($xmlAssinada,$configJson,$certificado,$senha,$tpAmb);
+		$urlRecibo = 'pdvs/'.$pontoVenda->nome.'/nfe/nfe'.strval($pedido->id).$PastaNFe.'/nfe'.strval($pedido->id).'-Recibo.xml';
+		Storage::put($urlRecibo, $recibo);*/
 		
-	//	Storage::put('recibo.xml', $recibo);
+	//	danfe($xmlAssinada);
 		
-       // $recibo = Storage::get('recibo.xml');
-       
+	//	print_r($recibo);
+		
+		//if(DB::table('nf')->insert(['id_pedido' => $pedido->id , 'status' => 1, 'xmlAss' => $urlXmlAssinada,'recibo' => $urlRecibo,'tipo' => $tipoNFeDB]))
+			if(DB::table('nf')->insert(['id_pedido' => $pedido->id , 'status' => 1, 'xmlAss' => $urlXmlAssinada,'tipo' => $tipoNFeDB]))
+			return true;
+		else
+			return false;
+        
+      
 		//Consulta Status do Recibo da XML, caso esteja tudo OK! é retornado o //protocolo para adicionar a XML
-	//	$protocolo = consultaRec($recibo, $configJson,$certificado,$senha,$tpAmb);
+		
+	/*	$recibo = Storage::get('recibo.xml');
+		
+		$protocolo = consultaRec($recibo, $configJson,$certificado,$senha,$tpAmb);
+	    print_r($protocolo);
+	     Storage::put('protocolo.xml', $protocolo);
 	
-	// Storage::put('protocolo.xml', $protocolo);
-	
-//	    $nfe = Storage::get('nfe.xml');
+	    $nfe = Storage::get('nfe/'.$pontoVenda->nome.'/nfe.xml');
 
-//	   $protocolo = Storage::get('protocolo.xml');
+	   $protocolo = Storage::get('protocolo.xml');
 
-//	   $nfe = addProt($nfe, $protocolo, $configJson,$certificado,$senha);
-
-	  //  $xmlValida = validaNfe($nfe,$configJson,$certificado,$senha);
-	   
+	   $nfe = addProt($nfe, $protocolo, $configJson,$certificado,$senha);
+        
+       Storage::put('nfePronta.xml', $nfe);*/
+ 
+   //    $nfePronta = Storage::get('nfePronta.xml');
+	  
 		//Imprimir DANFE
-//		danfe($nfe);
+	//	danfe($nfePronta);
+		
+		//  $xmlValida = validaNfe($nfe,$configJson,$certificado,$senha);
 
 	}
 	
@@ -570,7 +638,7 @@
         //Retira o ultimo digito do recibo, já que são apenas 15 numeros
         $reciboAr = substr($recibo, 0, -1);
         
-        $retorno  = $tools->sefazConsultaRecibo(411110216497385, $tpAmb);
+        $retorno  = $tools->sefazConsultaRecibo($reciboAr, $tpAmb);
         
         return $retorno;
 	    } catch (InvalidArgumentException $e) {
@@ -609,15 +677,15 @@
 	function danfe($xml)
 	{
 		try {
-			$danfe = new Danfe($xml, 'P', 'A4', '', 'F', '');
-			$id = $danfe->montaDANFE();
-			$pdf = $danfe->render();
-			//o pdf porde ser exibido como view no browser
-			//salvo em arquivo
-			//ou setado para download forçado no browser 
-			//ou ainda gravado na base de dados
-			header('Content-Type: application/pdf');
-			echo $pdf;
+			$danfe = new Danfe($xml, 'P', 'A4', 'images/logo.jpg', 'I', '');
+    $id = $danfe->montaDANFE();
+    $pdf = $danfe->render();
+    //o pdf porde ser exibido como view no browser
+    //salvo em arquivo
+    //ou setado para download forçado no browser 
+    //ou ainda gravado na base de dados
+    header('Content-Type: application/pdf');
+    echo $pdf;
 			} catch (InvalidArgumentException $e) {
 			echo "Ocorreu um erro durante o processamento :" . $e->getMessage();
 		}    

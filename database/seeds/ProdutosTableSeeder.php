@@ -18,6 +18,7 @@ class ProdutosTableSeeder extends Seeder
 		$produto->codigo = 'zp-bq';
 		$produto->quantidade = 500;
 		$produto->preco = 4.19;
+		$produto->peso = 0.25;
 		$produto->imagem = 'uploads/produtos/Zoop-Boquinha/zp-bq.png';
 		$produto->status = 1;
 		$produto->save();

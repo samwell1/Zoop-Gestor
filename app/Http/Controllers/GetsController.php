@@ -58,7 +58,7 @@
 		{
 			$request->user()->authorizeRoles(['admin']);
 			//$pontosVenda = PontoVenda::all();
-			$pontosVenda = PontoVenda::join('cidades', 'ponto_vendas.cidade', '=', 'cidades.id')->join('status','ponto_vendas.status','=','status.id')->join('users','ponto_vendas.user_id','=','users.id')->select('ponto_vendas.*','cidades.nome as cidade','users.name as repositor','status.nome as status')->get();
+			$pontosVenda = PontoVenda::join('cidades', 'ponto_vendas.cidade', '=', 'cidades.id')->join('status','ponto_vendas.status','=','status.id')->leftJoin('estoque_pontovenda','ponto_vendas.id','=','estoque_pontovenda.id_pontovenda')->join('users','ponto_vendas.user_id','=','users.id')->select('users.name as repositor','ponto_vendas.*','cidades.nome as cidade','estoque_pontovenda.id_pontovenda as pdv',DB::raw('SUM(estoque_pontovenda.estoque) as estoque'),'status.nome as status')->groupBy('ponto_vendas.id')->orderBy('status.id')->get();
 			$produtos = Produto::all();
 			return view('dashboard.pontosdeVenda',['pontosvenda' => $pontosVenda,'produtos' => $produtos]);
 		}
