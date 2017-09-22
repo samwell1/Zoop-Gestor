@@ -42,13 +42,41 @@
 		
 		public function nf(Request $request)
 		{
-		/*$uri = 'https://api.iugu.com/v1/';
+		/*
 		$usuarioSenha = '16f5eb7c2cb167556af5aceabdddcbd5:';
 		$us8 = utf8_encode($usuarioSenha);
 		$us64 = base64_encode($us8);
 		echo $us8.'<br>'.$us64;*/
+	$headers[] = "Authorization: Basic " . base64_encode('16f5eb7c2cb167556af5aceabdddcbd5'. ":");
+    $headers[] = "Accept: application/json";
+$url = 'https://api.iugu.com/v1/invoices';
+	  $curl = curl_init();
+
+    $opts = Array();
+
+    $opts[CURLOPT_URL] = $url;
+    $opts[CURLOPT_RETURNTRANSFER] = true;
+    $opts[CURLOPT_CONNECTTIMEOUT] = 30;
+    $opts[CURLOPT_TIMEOUT] = 80;
+    $opts[CURLOPT_RETURNTRANSFER] = true;
+    $opts[CURLOPT_HTTPHEADER] = $headers;
+
+    $opts[CURLOPT_SSL_VERIFYHOST] = 2;
+    $opts[CURLOPT_SSL_VERIFYPEER] = true;
+    $opts[CURLOPT_CAINFO] = realpath(dirname(__FILE__) . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "data") . DIRECTORY_SEPARATOR . "ca-bundle.crt";
+
+    curl_setopt_array($curl, $opts);
+
+    $response_body = curl_exec($curl);
+    $response_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+
+    curl_close($curl);
+
+
+var_dump(Array($response_body, $response_code));
 		
 		
+/*		
 $username = '16f5eb7c2cb167556af5aceabdddcbd5:';
 $password = '';
 
@@ -70,7 +98,7 @@ curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 curl_setopt($ch, CURLOPT_USERPWD, "$username64:$password64");
 $result = curl_exec($ch);
 curl_close($ch);  
-echo($result);
+echo($result);*/
 /*
   //criando o recurso cURL 
   $cr = curl_init();
