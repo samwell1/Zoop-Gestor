@@ -42,32 +42,50 @@
 		
 		public function nf(Request $request)
 		{
-		$uri = 'http://localhost/http.php';
+		/*$uri = 'https://api.iugu.com/v1/';
 		$usuarioSenha = '16f5eb7c2cb167556af5aceabdddcbd5:';
 		$us8 = utf8_encode($usuarioSenha);
 		$us64 = base64_encode($us8);
-		echo $us8.'<br>'.$us64;
+		echo $us8.'<br>'.$us64;*/
 		
 		
+$username = '16f5eb7c2cb167556af5aceabdddcbd5:';
+$password = '';
 
-		/*
+$username8 = utf8_encode($username);
+$password8 = utf8_encode($password);
+$username64 = base64_encode($username8);
+$password64 = base64_encode($password8);
+		
 //curl_setopt($ch, CURLOPT_URL, "https://api.iugu.com/v1/invoices");
-$campos = '{"email":"Contafarma","due_date":"2017-09-22","items":[{"quantity":45,"description":"zoop variados","price_cents":4.19}],"payer":{"cpf_cnpj":"08671558924","name":"Joao da Silva","phone_prefix":"11","phone":"33244578","email":"joao@example.com","address":{"zip_code":"80230090","street":"Brasil","number":"46","district":"Centro","city":"Curitiba","state":"PR","country":"Brasil","complement":"Casa"}}}';
-$camposEnvia = json_encode($campos);
-
-var_dump($campos);
-echo'<br>';
-var_dump($camposEnvia);
+//$campos = '{"email":"Contafarma","due_date":"2017-09-22","items":[{"quantity":45,"description":"zoop variados","price_cents":4.19}],"payer":{"cpf_cnpj":"08671558924","name":"Joao da Silva","phone_prefix":"11","phone":"33244578","email":"joao@example.com","address":{"zip_code":"80230090","street":"Brasil","number":"46","district":"Centro","city":"Curitiba","state":"PR","country":"Brasil","complement":"Casa"}}}';
+//$camposEnvia = json_encode($campos);
+$login = 'login';
+$password = 'password';
+$url = 'https://api.iugu.com/v1/';
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL,$url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+curl_setopt($ch, CURLOPT_USERPWD, "$username64:$password64");
+$result = curl_exec($ch);
+curl_close($ch);  
+echo($result);
+/*
   //criando o recurso cURL 
   $cr = curl_init();
   //definindo a url de busca 
-  curl_setopt($cr, CURLOPT_URL, "https://api.iugu.com/v1/invoices"); 
+  curl_setopt($cr, CURLOPT_URL, "https://api.iugu.com/v1/"); 
   //definindo a url de busca 
   curl_setopt($cr, CURLOPT_RETURNTRANSFER, true); 
   
-  curl_setopt($cr, CURLOPT_POST, TRUE);
+  curl_setopt($cr, CURLOPT_HTTPHEADER,
+            array(
+              "Authorization: Basic " . base64_encode($username64 . ":" . $password64)
+));
+  //curl_setopt($cr, CURLOPT_POST, TRUE);
 
-  curl_setopt($cr, CURLOPT_POSTFIELDS, $campos);
+  //curl_setopt($cr, CURLOPT_POSTFIELDS, $campos);
 
  //definindo uma variável para receber o conteúdo da página... 
   $retorno = curl_exec($cr); 
@@ -75,7 +93,7 @@ var_dump($camposEnvia);
   curl_close($cr); 
   //fechamos o recurso e liberamos o sistema...
   //mostrando o conteúdo... 
-  var_dump($retorno);*/
+  echo($retorno);*/
 		}
 		
 		public function usuarios(Request $request)
