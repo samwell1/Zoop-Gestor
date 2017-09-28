@@ -66,9 +66,9 @@
 								@endif
 								
 							<td class="td-actions text-right">
-								<button type="button" rel="tooltip" title="Ver" class="btn btn-info btn-simple btn-xs" data-toggle="modal" data-target="#modal{{$pontovenda->id}}"> 
+								<a href="{{ URL::to('admin/pdv/' . $pontovenda->id) }}"  rel="tooltip" title="Ver" class="btn btn-info btn-simple btn-xs" > 
 									<i class="fa fa-eye"></i>
-								</button>
+								</a>
 								<button type="button" rel="tooltip" title="Editar" class="btn btn-primary btn-simple btn-xs" data-toggle="modal" data-target="#editar{{$pontovenda->id}}">
 									<i class="material-icons">edit</i>
 								</button>
@@ -137,46 +137,6 @@
 								</div>
 							</div>
 						</div> 
-						<!-- Estoque -->
-						<div class="modal fade" id="modal{{$pontovenda->id}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-							<div class="modal-dialog" role="document">
-								<div class="modal-content">
-									<div class="modal-header">
-										<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-										<h4 class="modal-title" id="myModalLabel">Abastecer estoque</h4>
-									</div>
-									<form action="" method="POST">
-										{{ csrf_field() }}
-										<input type="hidden" name="pdv" value="{{$pontovenda->id}}">
-										<div class="modal-body">
-											<div class="row">
-												<div class="col-md-6">
-													<div class="form-group label-floating">
-														<label class="control-label">Produto</label>
-														<select name="produto" class="form-control">
-															@foreach($produtos as $produto)
-															<option value="{{$produto->id}}">{{$produto->nome}} - {{$produto->modelo}} | <b>Estoque: {{$produto->quantidade}}</b></option>
-															@endforeach
-														</select>
-													</div>
-												</div>
-												<div class="col-md-6">
-													<div class="form-group label-floating">
-														<label class="control-label">Quantidade</label>
-														<input type="number" name="quantidade" class="form-control" >
-													</div>
-												</div>
-											</div>
-											<div class="clearfix"></div>
-										</div>
-										<div class="modal-footer">
-											<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
-											<button type="submit" class="btn btn-primary">Cadastrar</button>
-										</div>
-									</form>
-								</div>
-							</div>
-						</div>
 						@endforeach
 					</tbody>
 				</table>

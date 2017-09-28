@@ -4,8 +4,56 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "141ffc8dfd466c0088a202424c99c81b",
+    "content-hash": "217b98462a02a61f0214343494d589cb",
     "packages": [
+        {
+            "name": "adhenrique/iugu",
+            "version": "v1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/adhenrique/iugu-laravel.git",
+                "reference": "9517129ccf3c54cad9e0f694d3772b786d713ee6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/adhenrique/iugu-laravel/zipball/9517129ccf3c54cad9e0f694d3772b786d713ee6",
+                "reference": "9517129ccf3c54cad9e0f694d3772b786d713ee6",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-mbstring": "*",
+                "php": ">=5.2"
+            },
+            "require-dev": {
+                "simpletest/simpletest": "1.1.5"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "lib/Iugu/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Iugu team and contributors",
+                    "homepage": "https://bitbucket.org/adhenrique/iugu-laravel/"
+                }
+            ],
+            "description": "iugu PHP Library to laravel",
+            "homepage": "https://iugu.com",
+            "keywords": [
+                "api",
+                "iugu",
+                "pagamentos"
+            ],
+            "time": "2017-02-23T19:05:53+00:00"
+        },
         {
             "name": "artesaos/cidadesbr",
             "version": "v1.0.2",

@@ -19,8 +19,8 @@
 	use NFePHP\NFe\Make;
 	use NFePHP\DA\NFe\Danfe;
 	
-
 	
+	use Iugu\iugu\lib;
 	
 	class GetsController extends Controller
 	{
@@ -42,86 +42,37 @@
 		
 		public function nf(Request $request)
 		{
-		/*
-		$usuarioSenha = '16f5eb7c2cb167556af5aceabdddcbd5:';
-		$us8 = utf8_encode($usuarioSenha);
-		$us64 = base64_encode($us8);
-		echo $us8.'<br>'.$us64;*/
-	$headers[] = "Authorization: Basic " . base64_encode('16f5eb7c2cb167556af5aceabdddcbd5'. ":");
-    $headers[] = "Accept: application/json";
-$url = 'https://api.iugu.com/v1/invoices';
-	  $curl = curl_init();
-
-    $opts = Array();
-
-    $opts[CURLOPT_URL] = $url;
-    $opts[CURLOPT_RETURNTRANSFER] = true;
-    $opts[CURLOPT_CONNECTTIMEOUT] = 30;
-    $opts[CURLOPT_TIMEOUT] = 80;
-    $opts[CURLOPT_RETURNTRANSFER] = true;
-    $opts[CURLOPT_HTTPHEADER] = $headers;
-
-    $opts[CURLOPT_SSL_VERIFYHOST] = 2;
-    $opts[CURLOPT_SSL_VERIFYPEER] = true;
-    $opts[CURLOPT_CAINFO] = realpath(dirname(__FILE__) . DIRECTORY_SEPARATOR . ".." . DIRECTORY_SEPARATOR . "data") . DIRECTORY_SEPARATOR . "ca-bundle.crt";
-
-    curl_setopt_array($curl, $opts);
-
-    $response_body = curl_exec($curl);
-    $response_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
-    curl_close($curl);
-
-
-var_dump(Array($response_body, $response_code));
+	//GET
+	$urlPgDireto = "http://api.iugu.com/v1/charge";
+	$urlConsFatura = "http://api.iugu.com/v1/invoices/3755C6F80B4F4C2888FA8C6E4416DFCB";
+	$urlTodasFatura =  "http://api.iugu.com/v1/invoices/";
+	
+	//POST
+	$dadosFatura = Array('email' => 'wellerso@hotmail.com','due_date'=>'2017-09-29','payer' => Array(
+	'cpf_cnpj' => '25182254000107','name' => 'Wellerson Samuel','phone_prefix' => '41','phone' => '96969696','email' => 'wellerson@hotmail.com', 'address' => Array(
+	'zip_code' => '80230090', 'city' => 'CURITIBA', 'state' => 'PR', 'street' => 'AV.Brasil','number' => '3432','district' => 'Centro', 'country' => 'Brasil', 'complement' => 'Casa')
+	),'payable_with' => 'bank_slip', 'items[]' => Array('name' => 'Zoop', 'description' => 'zoop', 'quantity' => '10','price_cents' => '400'));
+	
+	//$iuguApi = apiIugu('GET','',$urlConsFatura);
+	//$retorno = json_decode($iuguApi);
+	//echo $retorno->due_date.' - '.$retorno->id;
+	
+	$items[] = "";
+	
+	//$items = ["item" => "Zoop", "Price" => 100];
+	$items[] = ["'item' => 'Zoop Boquinha', 'Price' => 250"];
+	$items[] = ["'item' => 'Zoop Boquinha', 'Price' => 360"];
+	
+	$itemis = "";
+	var_dump($items);
+	echo '<br>';
+	foreach($items as $item){
+	var_dump($item);
+	$itemis = $item;
+	}
+	echo '<br>';
+	var_dump($itemis);
 		
-		
-/*		
-$username = '16f5eb7c2cb167556af5aceabdddcbd5:';
-$password = '';
-
-$username8 = utf8_encode($username);
-$password8 = utf8_encode($password);
-$username64 = base64_encode($username8);
-$password64 = base64_encode($password8);
-		
-//curl_setopt($ch, CURLOPT_URL, "https://api.iugu.com/v1/invoices");
-//$campos = '{"email":"Contafarma","due_date":"2017-09-22","items":[{"quantity":45,"description":"zoop variados","price_cents":4.19}],"payer":{"cpf_cnpj":"08671558924","name":"Joao da Silva","phone_prefix":"11","phone":"33244578","email":"joao@example.com","address":{"zip_code":"80230090","street":"Brasil","number":"46","district":"Centro","city":"Curitiba","state":"PR","country":"Brasil","complement":"Casa"}}}';
-//$camposEnvia = json_encode($campos);
-$login = 'login';
-$password = 'password';
-$url = 'https://api.iugu.com/v1/';
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL,$url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
-curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-curl_setopt($ch, CURLOPT_USERPWD, "$username64:$password64");
-$result = curl_exec($ch);
-curl_close($ch);  
-echo($result);*/
-/*
-  //criando o recurso cURL 
-  $cr = curl_init();
-  //definindo a url de busca 
-  curl_setopt($cr, CURLOPT_URL, "https://api.iugu.com/v1/"); 
-  //definindo a url de busca 
-  curl_setopt($cr, CURLOPT_RETURNTRANSFER, true); 
-  
-  curl_setopt($cr, CURLOPT_HTTPHEADER,
-            array(
-              "Authorization: Basic " . base64_encode($username64 . ":" . $password64)
-));
-  //curl_setopt($cr, CURLOPT_POST, TRUE);
-
-  //curl_setopt($cr, CURLOPT_POSTFIELDS, $campos);
-
- //definindo uma variável para receber o conteúdo da página... 
-  $retorno = curl_exec($cr); 
-  //fechando-o para liberação do sistema. 
-  curl_close($cr); 
-  //fechamos o recurso e liberamos o sistema...
-  //mostrando o conteúdo... 
-  echo($retorno);*/
 		}
 		
 		public function usuarios(Request $request)
@@ -178,6 +129,19 @@ echo($result);*/
 		return view('dashboard.estoque',['produtos'=> $produtos, 'pontosvenda' => $pontosVenda, 'repositores' => $repositores]);
 		}
 		
+		public function infopdv(Request $request, $idPdv)
+		{
+		$request->user()->authorizeRoles(['admin']);
+		//$produtos = Produto::all();
+		//$pontovendas = PontoVenda::all();
+		$pontoVenda = PontoVenda::find($idPdv);
+		//$pedido = Pedido::where('pedidos.id', $idPedido)->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('users','pedidos.id_repositor','=','users.id')->join('ponto_vendas','pedidos.id_pdv','=','ponto_vendas.id')->select('pedido_produtos.qtde as qtde','users.name as repositor','pedidos.*','ponto_vendas.nome as ponto_venda')->first();
+		//$produtos = Pedido::where('pedidos.id', $idPedido)->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->select('produtos.nome as nome','produtos.modelo as modelo','produtos.codigo as codigo','pedido_produtos.qtde as qtde','produtos.preco as preco')->get();
+		//$pedido = Pedido::find($idPedido);
+		
+		return view('dashboard.pdv.infopdv',[ 'pontoVenda' => $pontoVenda,]);
+		}
+		
 		public function infopedido(Request $request, $idPedido)
 		{
 		$request->user()->authorizeRoles(['admin']);
@@ -186,8 +150,15 @@ echo($result);*/
 		$pedido = Pedido::where('pedidos.id', $idPedido)->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('users','pedidos.id_repositor','=','users.id')->select('pedido_produtos.qtde as qtde','users.name as repositor','pedidos.*')->first();
 		$produtos = Pedido::where('pedidos.id', $idPedido)->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->select('produtos.nome as nome','produtos.modelo as modelo','produtos.codigo as codigo','pedido_produtos.qtde as qtde','produtos.preco as preco')->get();
 		//$pedido = Pedido::find($idPedido);
+		$boleto = null;
+		if($pedido->boleto != null || $pedido->boleto != ''){
+		$urlFatura =  "http://api.iugu.com/v1/invoices/".$pedido->boleto;
+		$iuguApi = apiIugu('GET', '', $urlFatura);
+		$boleto = json_decode($iuguApi);
+		}
 		
-		return view('dashboard.pedido.infopedido',[ 'pedido' => $pedido, 'produtos' => $produtos]);
+		return view('dashboard.pedido.infopedido',[ 'pedido' => $pedido, 'produtos' => $produtos,'boleto' => $boleto]);
+		
 		}
 		
 		public function tempo_agora() {

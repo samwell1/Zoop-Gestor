@@ -46,6 +46,37 @@
 	</div>
 </div>
 
+@if($pedido->boleto != null || $pedido->boleto != '')
+<div class="row">
+	<div class="col-md-12">
+		<div class="card">
+			<div class="card-header" data-background-color="purple">
+				<h4 class="title">Status: <b>{{$boleto->status}}</b> | Data de Vencimento Boleto: <b> {{$boleto->due_date}}</b> </h4>
+				<p class="category">Abaixo estão as ações do boleto</p>
+			</div>
+			<div class="card-content table-responsive">
+				<table class="table">
+					<thead class="text-primary">
+						<th>Data</th>
+						<th>Descrição</th>
+						<th>Notas</th>
+					</thead>
+					<tbody>
+					@foreach($boleto->logs as $logs)
+						<tr>
+							<td>{{$logs->created_at}}</td>
+							<td>{{$logs->description}}</td>
+							<td>{{$logs->notes}}</td>
+						</tr>
+				@endforeach
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+@endif
+
 
 @endsection
 

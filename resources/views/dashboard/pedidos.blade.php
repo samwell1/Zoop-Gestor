@@ -46,6 +46,21 @@
 							<td>{{$pedido->created_at}}</td>
 							<td>{{$pedido->repositor}}</td>
 							<td>{{formata_dinheiro($pedido->valor)}}</td>
+							@if($pedido->status == 'paid')
+							<td><button type="button" rel="tooltip" title="Ponto de venda ativado" class="btn btn-success btn-simple btn-xs"> 
+									<i class="fa fa-circle"></i> {{$pontovenda->status}}
+								</button> </td>
+								@elseif($pedido->status == 'pending')
+							<td>
+								<button type="button" rel="tooltip" title="Ponto de venda pendente (contrato, documentos)" class="btn btn-warning btn-simple btn-xs" data-toggle="modal" data-target="#modal{{$pontovenda->id}}"> 
+									<i class="fa fa-circle"></i> {{$pontovenda->status}}
+								</button></td>
+								@elseif($pedido->status == 'cancel')
+								<td>
+								<button type="button" rel="tooltip" title="Ponto de venda desativado" class="btn btn-danger btn-simple btn-xs" data-toggle="modal" data-target="#editar{{$pontovenda->id}}">
+									<i class="fa fa-circle"></i> {{$pontovenda->status}}
+								</button></td>
+								@endif
 							<td class="td-actions text-right">
 								<a href="{{ URL::to('admin/pedido/' . $pedido->id) }} "><button type="button" rel="tooltip" title="Visualizar" class="btn btn-danger btn-simple btn-xs delete">
 									<i class="material-icons">pageview</i>

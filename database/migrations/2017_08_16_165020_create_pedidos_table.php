@@ -18,6 +18,7 @@ class CreatePedidosTable extends Migration
 			$table->integer('id_repositor');
 			$table->integer('id_pdv');
 			$table->float('valor');
+			$table->string('boleto');
 			//$table->string('pagamento');
             $table->timestamps();
         });

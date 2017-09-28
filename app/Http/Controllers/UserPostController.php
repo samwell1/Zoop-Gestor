@@ -150,9 +150,6 @@ class UserPostController extends Controller
 		"proxyPass"=>""
 		]
 		];
-		
- 		$configJson = json_encode($config);
- 	
 		//Array de configuração dos dados do emitente
 	    $configJson = json_encode($config);
 		//Certificado Digital para emissão das NFe's

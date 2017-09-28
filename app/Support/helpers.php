@@ -37,7 +37,42 @@
 		return $valorFormatado;
 	}
 	
-function nfe($idPontoVenda,$aP,$idPedido,$tipoNFe){
+	function apiIugu($metodo,$dados,$url){
+	$usuario = '16f5eb7c2cb167556af5aceabdddcbd5:'; //API Token Homologação
+	$headers[] = "Authorization: Basic " . base64_encode($usuario . ":");
+    $headers[] = "Accept: application/json";
+    $headers[] = "Accept-Charset: utf-8";
+    $headers[] = "User-Agent: Iugu PHPLibrary";
+    $headers[] = "Accept-Language: pt-br;q=0.9,pt-BR";
+	
+		$cr = curl_init(); 
+		curl_setopt($cr, CURLOPT_URL, $url); 
+		curl_setopt($cr, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($cr, CURLOPT_HTTPHEADER, $headers);
+		if($metodo == 'POST' || $metodo == 'post'){
+		curl_setopt($cr, CURLOPT_POST,1);
+		curl_setopt($cr, CURLOPT_POSTFIELDS, http_build_query($dados));
+		}
+		curl_setopt($cr, CURLOPT_SSL_VERIFYHOST, 2);
+    	curl_setopt($cr, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($cr, CURLOPT_CAINFO, Storage::get('certificado/ca-bundle.crt'));
+		//executando recurso 
+		$retorno = curl_exec($cr);
+		//fechando-o para liberação do sistema. 
+		curl_close($cr); 
+		//Retornando retorno
+		return $retorno;
+		
+		/*	Exemplo de manipulação do retorno
+		$array = json_decode($retorno);
+		foreach ($array->logs as $logs)
+		echo 'Status: '.$logs->description.' - Data: '.$logs->created_at.'<br>';
+		echo $array->id; // Pegar ID para guardar no banco
+		*/
+		
+	}
+	
+	function nfe($idPontoVenda,$aP,$idPedido,$tipoNFe){
  	$nfe = Make::v310();
  	//Ambiente de Emissão: PRODUÇÃO = 1; HOMOLOGAÇÃO = 2;
 		$tpAmb = '2';

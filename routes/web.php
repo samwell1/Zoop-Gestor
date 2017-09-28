@@ -22,6 +22,8 @@
 	
 	Route::get('/admin/pontosvenda', 'GetsController@pontosdeVenda')->name('pontosvenda');
 	
+	Route::get('/admin/pdv/{id}', 'GetsController@infopdv');
+	
 	Route::get('/admin/produtos', 'GetsController@produtos')->name('produtos');
 	
 	Route::get('/admin/pedidos', 'GetsController@pedidos')->name('pedidos');
@@ -33,9 +35,6 @@
 	Route::get('/admin/pedido/{id}', 'GetsController@infopedido');
 	
 	Route::get('/nf', 'GetsController@nf')->name('nf');
-	
-	
-	
 	//Fim
 	
 	//Inicio GET's REPOSITOR
@@ -48,8 +47,6 @@
 	Route::get('/user/pedido/{id}', 'UserGetController@infopedido');
 	
 	Route::get('/user/pdv/{id}', 'UserGetController@infopdv');
-	
-	
 	//Fim
 	
 	//Inicio CRUD Produto

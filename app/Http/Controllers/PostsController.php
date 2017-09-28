@@ -136,7 +136,7 @@
 			$pedido->id_pdv = $request['pdv'];
 			$pedido->valor = 0;
 			$pedido->save();
-			
+			$items[] = '';
 			foreach($request['produto'] as $index => $produto){
 				$repositor = Auth::user()->id;
 				//Retorna o Estoque do repositor logado
@@ -153,6 +153,8 @@
 					$produto = Produto::find($produto);
 					
 					$valorTotal += $produto->preco *  $request['qtde'][$index] ;
+					
+					$items[] = ['name' => $produto->nome.' - '.$produto->modelo, 'description' => $produto->nome.' - '.$produto->modelo, 'quantity' => $request['qtde'][$index], 'price_cents' =>  $produto->preco * 100];
 					$next = true;
 					}else{
 					$next = false;
@@ -160,8 +162,32 @@
 			}
 			
 			if($next == true){
+			$pdv = PontoVenda::find($request['pdv'])->join('cidades','ponto_vendas.cidade', '=', 'cidades.id')->select('cidades.nome as cidades','ponto_vendas.*')->first();
+			
+			$arrayItem = "";
+			
+			foreach($items as $item)
+			$arrayItem = $item;
+			
+			$dadosFatura = Array('email' => $pdv->email, 'due_date'=> strval(date('Y-m-d', strtotime('+3 days'))),
+			'payer' => Array(	'cpf_cnpj' => $pdv->cnpj,'name' => $pdv->nome,
+			'phone_prefix' => '41', 'phone' => $pdv->fone,'email' => $pdv->email,
+			'address' => Array('zip_code' => $pdv->cep, 'city' => $pdv->cidades, 'state' => $pdv->estado, 
+			'street' => $pdv->endereco,'number' => $pdv->numero, 'district' => $pdv->regiao, 'country' => 'Brasil', 
+			'complement' => 'Comercial')),
+			'payable_with' => 'bank_slip', 
+			'items[]' => $arrayItem);
+			
+			$urlFatura =  "http://api.iugu.com/v1/invoices/";
+			
+			$iuguApi = apiIugu('POST', $dadosFatura, $urlFatura);
+			
+			$retorno = json_decode($iuguApi);
+			$idBoleto = $retorno->id;
+	
 				$pedidoAtual = Pedido::find($pedido->id);
 				$pedidoAtual->valor = $valorTotal;
+				$pedidoAtual->boleto = $idBoleto;
 				$pedidoAtual->save();
 				return redirect($route)->with('status', 'Cadastrado com sucesso!');
 				

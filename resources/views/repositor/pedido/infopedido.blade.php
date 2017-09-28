@@ -34,6 +34,7 @@
 					</tbody>
 				</table>
 				<h4 class="text-right"><b>Total: {{formata_dinheiro($pedido->valor)}}</b></h4>
+				
 			</div>
 		</div>
 	</div>
