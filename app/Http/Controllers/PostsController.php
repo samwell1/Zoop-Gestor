@@ -11,6 +11,7 @@
 	use App\Pedido;
 	use App\User;
 	use Auth;
+	use Hash;
 	
 	class PostsController extends Controller
 	{
@@ -18,27 +19,26 @@
 		{
 			$request->user()->authorizeRoles(['admin']);
 			
-			
-			
-			 $validator = Validator::make($request->all(), [
+		/*	$validator = Validator::make($request->all(), [
 			'nome' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:4|confirmed',
         ]);
 
         if ($validator->fails()) {
-            return redirect('admin/usuarios')->with('status', $validator);
-        }
+            return redirect('admin/usuarios')->with('error', $validator);
+        }*/
 
 			$usuario = new User();
-			$usuario->name = $request['nome'];
+			$usuario->name = $request['name'];
 			$usuario->email = $request['email'];
-			$usuario->password = $request['senha'];
+			$usuario->password = bcrypt($request['password']);
+			
 			
 			if($usuario->save())
 			{
 			$usuario->roles()->attach(Role::where('name', 'repositor')->first());
-			return redirect('admin/usuarios')->with('status', 'Produto cadastrado com sucesso!');
+			return redirect('admin/usuarios')->with('status', 'Usuario cadastrado com sucesso!');
 			}else
 			{
 			return redirect('admin/usuarios')->with('error', 'Erro!');
@@ -101,18 +101,52 @@
 		public function cadastrarPdv(Request $request)
 		{	
 			$request->user()->authorizeRoles(['admin']);
+			$idUser = $request->user()->id;
 			
 			$pontoVenda = new PontoVenda();
 			$pontoVenda->nome = $request['nome'];
+			$pontoVenda->cnpj = $request['cnpj'];
 			$pontoVenda->endereco = $request['endereco'];
+			$pontoVenda->numero = $request['numero'];
+			$pontoVenda->cep = $request['cep'];
+			$pontoVenda->fone = $request['telefone'];
+			$pontoVenda->email = $request['email'];
 			$pontoVenda->regiao = $request['regiao'];
 			$pontoVenda->estado = $request['estado'];
 			$pontoVenda->cidade = $request['cidade'];
-			$pontoVenda->status = 1;
+			$pontoVenda->max_estoque = $request['estoque'];
+			$pontoVenda->user_id = $idUser;
+			$pontoVenda->status = 2;
 			$pontoVenda->save();
 			
-			//DB::table('estoque_pontovenda')->insert(['email' => 'john@example.com', 'votes' => 0]);
-			return redirect('admin/pontosvenda')->with('status', 'Cadastrado com sucesso!');
+			//Retira caracteres especiais
+			/*$telMask = array("(","-",")");
+			$cnpjMask = array("/","-",".");
+			
+			$telefone = str_replace($telMask, '', $request['telefone']);
+			$cep = str_replace('-', '', $request['cep']);
+			$cnpj = str_replace($cnpjMask, '', $request['cnpj']);
+			
+			$pontoVenda = new PontoVenda();
+			$pontoVenda->nome = $request['nome'];
+			$pontoVenda->cnpj = $cnpj;
+			$pontoVenda->endereco = $request['endereco'];
+			$pontoVenda->numero = $request['numero'];
+			$pontoVenda->cep = $cep;
+			$pontoVenda->fone = $telefone;
+			$pontoVenda->email = $request['email'];
+			$pontoVenda->regiao = $request['regiao'];
+			$pontoVenda->estado = $request['estado'];
+			$pontoVenda->cidade = $request['cidade'];
+			$pontoVenda->user_id = $idUser*/
+			
+			if($pontoVenda->save())
+			{
+				return redirect('user/pdv')->with('status', 'Cadastrado com sucesso!');
+			}
+			else
+				return redirect('user/pdv')->with('error', 'Erro!');
+
 		}
 		
 		public function cadastrarPedido(Request $request)
@@ -136,7 +170,7 @@
 			$pedido->id_pdv = $request['pdv'];
 			$pedido->valor = 0;
 			$pedido->save();
-			$items[] = '';
+			//$items[] = '';
 			foreach($request['produto'] as $index => $produto){
 				$repositor = Auth::user()->id;
 				//Retorna o Estoque do repositor logado
@@ -154,7 +188,7 @@
 					
 					$valorTotal += $produto->preco *  $request['qtde'][$index] ;
 					
-					$items[] = ['name' => $produto->nome.' - '.$produto->modelo, 'description' => $produto->nome.' - '.$produto->modelo, 'quantity' => $request['qtde'][$index], 'price_cents' =>  $produto->preco * 100];
+					//$items[] = ['name' => $produto->nome.' - '.$produto->modelo, 'description' => $produto->nome.' - '.$produto->modelo, 'quantity' => $request['qtde'][$index], 'price_cents' =>  $produto->preco * 100];
 					$next = true;
 					}else{
 					$next = false;
@@ -164,7 +198,7 @@
 			if($next == true){
 			$pdv = PontoVenda::find($request['pdv'])->join('cidades','ponto_vendas.cidade', '=', 'cidades.id')->select('cidades.nome as cidades','ponto_vendas.*')->first();
 			
-			$arrayItem = "";
+			/*$arrayItem = "";
 			
 			foreach($items as $item)
 			$arrayItem = $item;
@@ -183,11 +217,11 @@
 			$iuguApi = apiIugu('POST', $dadosFatura, $urlFatura);
 			
 			$retorno = json_decode($iuguApi);
-			$idBoleto = $retorno->id;
+			$idBoleto = $retorno->id;*/
 	
 				$pedidoAtual = Pedido::find($pedido->id);
 				$pedidoAtual->valor = $valorTotal;
-				$pedidoAtual->boleto = $idBoleto;
+				//$pedidoAtual->boleto = $idBoleto;
 				$pedidoAtual->save();
 				return redirect($route)->with('status', 'Cadastrado com sucesso!');
 				
@@ -245,9 +279,6 @@
 			return redirect('admin/pontosvenda')->with('error', 'Erro!');
 			}
 				
-			
-
-			
 		}
 		
 		public function estoqueRepositor(Request $request)
@@ -271,6 +302,26 @@
 			else{
 				return redirect('admin/usuarios')->with('error', 'Erro!');
 			}
+		}
+		
+		public function admin_editar_perfil(Request $request){
+			$request->user()->authorizeRoles(['admin']);
+			$usuario = User::find($request['idUser']);
+			
+			if (Hash::check ( $request['confirmpassword'], $usuario->password )) {
+			
+			$usuario->name = $request['nome'];
+			$usuario->email = $request['email'];
+			
+			if($request['password'] != null || $request['password'] != '')
+			$usuario->password = bcrypt($request['password']);
+		
+			$usuario->save();
+			return redirect('admin/perfil')->with('status', 'Perfil editado com sucesso!');
+			}else{
+			return redirect('admin/perfil')->with('error', 'Senha atual incorreta!');
+			}
+			
 		}
 		
 		public function mudarFuncao(Request $request) {

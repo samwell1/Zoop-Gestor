@@ -17,7 +17,7 @@ class UserPostController extends Controller
 			$request->user()->authorizeRoles(['repositor']);
 			$idUser = $request->user()->id;
 			
-			/*$pontoVenda = new PontoVenda();
+			$pontoVenda = new PontoVenda();
 			$pontoVenda->nome = $request['nome'];
 			$pontoVenda->cnpj = $request['cnpj'];
 			$pontoVenda->endereco = $request['endereco'];
@@ -28,15 +28,13 @@ class UserPostController extends Controller
 			$pontoVenda->regiao = $request['regiao'];
 			$pontoVenda->estado = $request['estado'];
 			$pontoVenda->cidade = $request['cidade'];
+			$pontoVenda->max_estoque = $request['estoque'];
 			$pontoVenda->user_id = $idUser;
 			$pontoVenda->status = 2;
 			$pontoVenda->save();
 			
-			//DB::table('estoque_pontovenda')->insert(['email' => 'john@example.com', 'votes' => 0]);
-			return redirect('user/pdv')->with('status', 'Cadastrado com sucesso!');*/
-			
 			//Retira caracteres especiais
-			$telMask = array("(","-",")");
+			/*$telMask = array("(","-",")");
 			$cnpjMask = array("/","-",".");
 			
 			$telefone = str_replace($telMask, '', $request['telefone']);
@@ -54,8 +52,7 @@ class UserPostController extends Controller
 			$pontoVenda->regiao = $request['regiao'];
 			$pontoVenda->estado = $request['estado'];
 			$pontoVenda->cidade = $request['cidade'];
-			$pontoVenda->user_id = $idUser;
-			$pontoVenda->status = 2;
+			$pontoVenda->user_id = $idUser*/
 			
 			if($pontoVenda->save())
 			{
@@ -79,14 +76,14 @@ class UserPostController extends Controller
 				else
 				return redirect('user/pedidos')->with('error', 'Erro! NF-e com erro.');*/
 			
-			$lastNFe = DB::table('nf')->select('id')->orderBy('id','desc')->first();
+			$lastNFe = DB::table('nf')->where('id_pdv', $request['idPdv'])->select('id')->orderBy('id','desc')->first();
 			
 		
 			
 			$pontoVenda = PontoVenda::find($request['idPdv']);
 			$idPontoVenda = $pontoVenda->id;
 			
-			if($pontoVenda->estado == 'PR'){
+			if($pontoVenda->estado == 16){
 			if(count($lastNFe) == 0 || count($lastNFe) == null){		//Verifica se já existe NFe
 			if(nfe($idPontoVenda,$Produtos,$idPedido,1)){	//Envia Remessa PR
 						return redirect('user/pedidos')->with('status', 'NF-e gerada com sucesso!');
@@ -213,6 +210,67 @@ class UserPostController extends Controller
 				return redirect('user/pedidos')->with('status', 'NF-e enviada com sucesso!');
 				else
 				return redirect('user/pedidos')->with('error', 'Erro! NF-e com erro.');
+		}
+		
+		public function emitBoleto(Request $request)
+		{
+			$pdv = PontoVenda::find($request['idPdv']);
+			$pedido = Pedido::find($request['idPedido']);
+			$items[] = '';
+			$arrayItem = "";
+			
+			$produtos = DB::table('pedido_produtos')->where('pedido_produtos.id_pedido', $request['idPedido'])->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->select('produtos.nome as nome','produtos.modelo as modelo','produtos.codigo as codigo','pedido_produtos.qtde as qtde','produtos.preco as preco')->get();
+			
+			foreach($produtos as $produto)
+			$items[] = ['name' => $produto->nome.' - '.$produto->modelo, 'description' => $produto->nome.' - '.$produto->modelo, 'quantity' => $produto->qtde, 'price_cents' =>  $produto->preco * 100];
+			
+			foreach($items as $item)
+			$arrayItem = $item;
+			
+			$dadosFatura = Array('email' => $pdv->email, 'due_date'=> strval(date('Y-m-d', strtotime('+3 days'))),
+			'payer' => Array(	'cpf_cnpj' => $pdv->cnpj,'name' => $pdv->nome,
+			'phone_prefix' => '', 'phone' => $pdv->fone,'email' => $pdv->email,
+			'address' => Array('zip_code' => $pdv->cep, 'city' => $pdv->cidades, 'state' => $pdv->estado, 
+			'street' => $pdv->endereco,'number' => $pdv->numero, 'district' => $pdv->regiao, 'country' => 'Brasil', 
+			'complement' => 'Comercial')),
+			'payable_with' => 'bank_slip', 
+			'items[]' => $arrayItem);
+			
+			$urlFatura =  "http://api.iugu.com/v1/invoices/";
+			
+			$iuguApi = apiIugu('POST', $dadosFatura, $urlFatura);
+			
+			$retorno = json_decode($iuguApi);
+			$idBoleto = $retorno->id;
+			
+			$pedido->boleto = $idBoleto;
+			
+			if($pedido->save())
+				return redirect('user/pedidos')->with('status', 'Boleto emitido e enviado com sucesso!');
+			else
+				return redirect('user/pedidos')->with('error', 'Erro!');
+			
+			
+		}
+		
+		public function user_editar_perfil(Request $request){
+			$request->user()->authorizeRoles(['repositor']);
+			$usuario = User::find($request['idUser']);
+			
+			if (Hash::check ( $request['confirmpassword'], $usuario->password )) {
+			
+			$usuario->name = $request['nome'];
+			$usuario->email = $request['email'];
+			
+			if($request['password'] != null || $request['password'] != '')
+			$usuario->password = bcrypt($request['password']);
+		
+			$usuario->save();
+			return redirect('user/perfil')->with('status', 'Perfil editado com sucesso!');
+			}else{
+			return redirect('user/perfil')->with('error', 'Senha atual incorreta!');
+			}
+			
 		}
 		
 }

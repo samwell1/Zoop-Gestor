@@ -37,6 +37,11 @@
 		return $valorFormatado;
 	}
 	
+	function formata_data($data) {
+		$dataFormatada = date('d/m/Y', strtotime($data));
+		return $dataFormatada;
+	}
+	
 	function apiIugu($metodo,$dados,$url){
 	$usuario = '16f5eb7c2cb167556af5aceabdddcbd5:'; //API Token Homologação
 	$headers[] = "Authorization: Basic " . base64_encode($usuario . ":");
@@ -91,13 +96,15 @@
 		$nNF = ($lastNFe->id + 1);
 		
 		$referenciarNfe = false;
-	switch($tipoNFe){
+		
+		switch($tipoNFe){
 			    //envioRemessaPR
 			    case 1:
 			     $CFOPp = '5917';   
 				 $natOp = 'Remessa de mercadoria em consignação mercantil ou industrial';
 				 $tpNF = 1;
 				 $finNFe = 1;
+				 $idDestp = 1;
 			    break;
 			    //envioRemessaOut
 			    case 2:
@@ -105,6 +112,7 @@
 				 $natOp = 'Remessa de mercadoria em consignação mercantil ou industrial';
 				 $tpNF = 1;
 				 $finNFe = 1;
+				 $idDestp = 2;
 			    break;
 			    //retornoRemessaPR
 			    case 3:
@@ -112,6 +120,7 @@
 				 $natOp = 'Devolução de mercadoria remetida em consignação mercantil ou industrial';
 				 $tpNF = 0;
 				 $finNFe = 4;
+				 $idDestp = 1;
 				 $referenciarNfe = true;
 			    break;
 			    //retornoRemessaOut
@@ -121,6 +130,7 @@
 				 $tpNF = 0;
 				 $finNFe = 4;
 				 $referenciarNfe = true;
+				 $idDestp = 2;
 			    break;
 			    //vendaPR
 			    case 5:
@@ -128,6 +138,7 @@
 				 $natOp = 'Venda de mercadoria adquirida ou recebida de terceiros';
 				 $tpNF = 1;
 				 $finNFe = 1;
+				 $idDestp = 1;
 			    break;
 			    //vendaOut
 			    case 6:
@@ -135,12 +146,13 @@
 				 $natOp = 'Venda de mercadoria adquirida ou recebida de terceiros';
 				 $tpNF = 1;
 				 $finNFe = 1;
+				 $idDestp = 2;
 			    break;
 			}
 
 		//$nfe->tagide($cUF, $cNF, $natOp, $indPag, $mod, $serie, $nNF, $dhEmi, $dhSaiEnt, $tpNF, $idDest, $cMunFG, $tpImp, $tpEmis, $cDV, $tpAmb, $finNFe, $indFinal, $indPres, $procEmi, $verProc, $dhCont, $xJust);
 		
-		$nfe->tagide(41,00000010,$natOp,1,55,1,(600+$nNF),date("Y-m-d\TH:i:sP"),date("Y-m-d\TH:i:sP"),$tpNF,1,'4106902',1,1,2,$tpAmb,$finNFe,1,9,0,'4.0.43','','');
+		$nfe->tagide(41,00000010,$natOp,1,55,1,(1040+$nNF),date("Y-m-d\TH:i:sP"),date("Y-m-d\TH:i:sP"),$tpNF,$idDestp,'4106902',1,1,2,$tpAmb,$finNFe,1,9,0,'4.0.43','','');
 		
 		
 	//refNFe NFe referenciada  
@@ -187,7 +199,18 @@
 		
 		
 		//destinatÃ¡rio
-		$CNPJ = $pontoVenda->cnpj;
+		$cnpjMask = array("/","-",".");
+		preg_match_all('#\w+#', $pontoVenda->fone, $arrayTelefone);
+
+		foreach($arrayTelefone as $subArrayTelefone){
+		for($i = 0; $i < 1; $i++)
+		$telefoneNota = $subArrayTelefone[1].$subArrayTelefone[2];
+		}
+
+		$cepNota = str_replace('-', '', $pontoVenda->cep);
+		$cnpjNota = str_replace($cnpjMask, '', $pontoVenda->cnpj);
+		
+		$CNPJ = $cnpjNota;
 		$CPF = '';
 		$idEstrangeiro = '';
 		$xNome = $pontoVenda->nome;
@@ -202,18 +225,19 @@
 		
 		//EndereÃ§o do destinatÃ¡rio
 		$cidade = DB::table('cidades')->find($pontoVenda->cidade);
+		$estado = DB::table('estados')->find($pontoVenda->estado);
 		
 		$xLgr = $pontoVenda->endereco;
 		$nro = $pontoVenda->numero;
 		$xCpl = '';
 		$xBairro = $pontoVenda->regiao;
-		$cMun = '4106902';
+		$cMun = $cidade->ibge;
 		$xMun = $cidade->nome;
-		$UF = $pontoVenda->estado;
-		$CEP = $pontoVenda->cep;
+		$UF = $estado->uf;
+		$CEP = $cepNota;
 		$cPais = '1058';
 		$xPais = 'Brasil';
-		$fone = $pontoVenda->fone;
+		$fone = $telefoneNota;
 		$resp = $nfe->tagenderDest($xLgr, $nro, $xCpl, $xBairro, $cMun, $xMun, $UF, $CEP, $cPais, $xPais, $fone);
 		
 		//produtos 1 (Limite da API Ã© de 56 itens por Nota)
@@ -640,7 +664,7 @@
 		
 		
 			//if(DB::table('nf')->insert(['id_pedido' => $pedido->id , 'status' => 1, 'xmlAss' => $urlXmlAssinada,'tipo' => $tipoNFeDB]))
-			if(DB::table('nf')->insert(['id_pedido' => $pedido->id , 'status' => 1, 'xmlAss' => $urlXmlAssinada,'recibo' => $urlRecibo,'tipo' => $tipoNFeDB]))
+			if(DB::table('nf')->insert(['id_pedido' => $pedido->id ,'id_pdv' =>  $pontoVenda->id, 'status' => 1, 'xmlAss' => $urlXmlAssinada,'recibo' => $urlRecibo,'tipo' => $tipoNFeDB]))
 			return true;
 		else
 			return false;

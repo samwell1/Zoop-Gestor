@@ -29,6 +29,7 @@
 						<th>Data</th>
 						<th>Ponto de Venda</th>
 						<th>Valor</th>
+						<th>Status</th>
 						<th>Ações</th>
 					</thead>
 					<tbody>
@@ -43,9 +44,29 @@
 						@foreach($pedidos as $pedido)
 						<tr>
 							<td>{{$pedido->id}}</td>
-							<td>{{$pedido->created_at}}</td>
+							<td>{{formata_data($pedido->created_at)}}</td>
 							<td>{{$pedido->ponto_venda}}</td>
 							<td>{{formata_dinheiro($pedido->valor)}}</td>
+							@if($pedido->status == 'paid')
+							<td><button type="button" rel="tooltip" title="Boleto Pago" class="btn btn-success btn-simple btn-xs"> 
+									<i class="fa fa-circle"></i> {{$pedido->status}}
+								</button> </td>
+								@elseif($pedido->status == 'pending')
+							<td>
+								<button type="button" rel="tooltip" title="Boleto Pendente" class="btn btn-warning btn-simple btn-xs" data-toggle="modal" "> 
+									<i class="fa fa-circle"></i> {{$pedido->status}}
+								</button></td>
+								@elseif($pedido->status == 'cancel')
+								<td>
+								<button type="button" rel="tooltip" title="Boleto Cancelado" class="btn btn-danger btn-simple btn-xs" data-toggle="modal">
+									<i class="fa fa-circle"></i> {{$pedido->status}}
+								</button></td>
+								@else
+								<td>
+								<button type="button" rel="tooltip" title="Boleto não EMITIDO" class="btn btn-warning btn-simple btn-xs" data-toggle="modal" >
+									<i class="fa fa-circle"></i> {{$pedido->status}}
+								</button></td>
+								@endif
 							<td class="td-actions text-right">
 								<a href="{{ URL::to('user/pedido/' . $pedido->id) }}"><button type="button" rel="tooltip" title="Visualizar" class="btn btn-danger btn-simple btn-xs delete">
 									<i class="material-icons">pageview</i>

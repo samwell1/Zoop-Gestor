@@ -24,7 +24,7 @@
 						<th>Região/Bairro</th>
 						<th>Cidade</th>
 						<th>Cadastrado por</th>
-						<th>Estoque</th>
+						<th>Estoque MAX</th>
 						<th>Status</th>
 						<th>Ações</th>
 					</thead>
@@ -152,7 +152,7 @@
 		<div class="modal-content">
 			<div class="modal-header">
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">Cadastrar</h4>
+				<h4 class="modal-title" id="myModalLabel">Cadastrar Ponto de Venda</h4>
 			</div>
 			<form action="{{route('cadastrar-pdv')}}" id="upload" method="POST">
 				{{ csrf_field() }}
@@ -161,75 +161,75 @@
 						<div class="col-md-4">
 							<div class="form-group label-floating">
 								<label class="control-label">Nome</label>
-								<input type="text" name="nome" class="form-control" >
+								<input type="text" name="nome" class="form-control" required/>
 							</div>
 						</div>
 						<div class="col-md-4">
 							<div class="form-group label-floating">
 								<label class="control-label">CNPJ</label>
-								<input type="text" name="cnpj" class="form-control" >
+								<input type="text" name="cnpj" class=" cnpj form-control" required/>
 							</div>
 						</div>
 						<div class="col-md-4">
 							<div class="form-group label-floating">
 								<label class="control-label">CEP</label>
-								<input type="text" name="endereco" class="form-control" >
+								<input type="text" name="cep" class="cep form-control" required/>
 							</div>
 						</div>
 						
 					</div>
 					<div class="row">
-					<div class="col-md-4">
+						<div class="col-md-4">
 							<div class="form-group label-floating">
 								<label class="control-label">Endereço</label>
-								<input type="text" name="endereco" class="form-control" >
+								<input type="text" name="endereco" class="form-control" required/>
 							</div>
 						</div>
 						<div class="col-md-2">
 							<div class="form-group label-floating">
 								<label class="control-label">Nº</label>
-								<input type="text" name="numero" class="form-control" >
+								<input type="text" name="numero" class="form-control" required/>
 							</div>
 						</div>
 						<div class="col-md-3">
 							<div class="form-group label-floating">
 								<label class="control-label">Bairro/Região</label>
-								<input type="text" name="regiao" class="form-control" >
+								<input type="text" name="regiao" class="form-control" required/>
 							</div>
 						</div>
 						<div class="col-md-3">
 							<div class="form-group label-floating">
 								<label class="control-label">Telefone</label>
-								<input type="text" name="telefone" class="form-control" >
+								<input type="text" name="telefone" class="fone form-control" required/>
 							</div>
 						</div>
 						
 					</div>
 					
 					<div class="row">
-					<div class="col-md-4">
-							<div class="form-group label-floating">
+						<div class="col-md-4">
+							<div class="form-group label">
 								<label class="control-label">UF</label>
-								<select id="uf" name="estado" class="uf form-control"></select>
+								<select id="uf" name="estado" class="uf form-control" required/></select>
 							</div>
 						</div>
 						<div class="col-md-4">
-							<div class="form-group label-floating">
+							<div class="form-group label">
 								<label class="control-label">Cidade</label>
-								<select id="cidade" name="cidade" class="cidade form-control"></select>
+								<select id="cidade" name="cidade" class="cidade form-control" required/></select>
 							</div>
 						</div>
 						<div class="col-md-4">
-							<div class="form-group label-floating">
+							<div class="form-group label">
 								<label class="control-label">Email</label>
-								<input type="text" name="email" class="form-control" >
+								<input type="text" name="email" class="form-control" required/>
 							</div>
 						</div>
 					</div>
 					<div class="clearfix"></div>
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
 					<button type="submit" class="btn btn-primary">Cadastrar</button>
 				</div>
 			</form>
@@ -240,7 +240,26 @@
 
 @section('post-script')
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.11/jquery.mask.js"></script>
 <script src="/vendor/artesaos/cidades/js/scripts.js"></script>
+
+<script>
+	$(document).ready(function(){
+		var maskBehavior = function (val) {
+			return val.replace(/\D/g, '').length === 11 ? '(00) 00000-0000' : '(00) 0000-00009';
+		},
+		options = {onKeyPress: function(val, e, field, options) {
+			field.mask(maskBehavior.apply({}, arguments), options);
+		}
+		};
+		
+		$('.fone').mask(maskBehavior, options);
+		$('.cep').mask('00000-000');
+		//$('.cpf').mask('000.000.000-00', {reverse: true});
+		$('.cnpj').mask('00.000.000/0000-00', {reverse: true});
+		
+	});
+</script>
 
 <script>
 	$('.uf').ufs({

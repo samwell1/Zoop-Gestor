@@ -15,10 +15,12 @@ class DatabaseSeeder extends Seeder
 		// Role comes before User seeder here.
 		$this->call(RoleTableSeeder::class);
 		// User seeder will use the roles above created.
+		$this->call(EstadosSeeder::class);
+		$this->call(CidadesSeeder::class);
+		$this->call(StatusTableSeeder::class);
 		$this->call(UserTableSeeder::class);
 		$this->call(ProdutosTableSeeder::class);
-		$this->call(CidadesSeeder::class);
 		$this->call(PontoVendaTableSeeder::class);
-		$this->call(StatusTableSeeder::class);
+		
     }
 }

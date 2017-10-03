@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Pedido;
+use App\User;
 use App\PontoVenda;
 use App\Produto;
+use Auth;
 
 class UserGetController extends Controller
 {
@@ -33,7 +35,9 @@ class UserGetController extends Controller
 			//$produtos->quantidade;
 			//$totalProdutos = $produtosEstoque + $produtosVendendo;
 			//return view('home',['produtosEstoque' => $produtosEstoque,'produtosVendendo' => $produtosVendendo, 'totalProdutos' => $totalProdutos]);
-			$pontosVenda = PontoVenda::where('user_id', $idUser)->join('cidades', 'ponto_vendas.cidade', '=', 'cidades.id')->leftJoin('estoque_pontovenda','ponto_vendas.id','=','estoque_pontovenda.id_pontovenda')->join('status','ponto_vendas.status','=','status.id')->select('ponto_vendas.*','cidades.nome as cidade','estoque_pontovenda.id_pontovenda as pdv',DB::raw('SUM(estoque_pontovenda.estoque) as estoque'),'status.nome as status')->groupBy('ponto_vendas.id')->orderBy('status.id')->get();
+			$pontosVenda = PontoVenda::where('user_id', $idUser)->join('cidades', 'ponto_vendas.cidade', '=', 'cidades.id')->join('estados','ponto_vendas.estado','=','estados.id')->join('status','ponto_vendas.status','=','status.id')->leftJoin('estoque_pontovenda','ponto_vendas.id','=','estoque_pontovenda.id_pontovenda')->join('users','ponto_vendas.user_id','=','users.id')->select('users.name as repositor','ponto_vendas.*','cidades.nome as cidade','estados.uf as estado','estoque_pontovenda.id_pontovenda as pdv','ponto_vendas.max_estoque as estoque','status.nome as status')->groupBy('ponto_vendas.id')->orderBy('status.id')->get();
+			
+			//$pontosVenda = PontoVenda::where('user_id', $idUser)->join('cidades', 'ponto_vendas.cidade', '=', 'cidades.id')->leftJoin('estoque_pontovenda','ponto_vendas.id','=','estoque_pontovenda.id_pontovenda')->join('status','ponto_vendas.status','=','status.id')->select('ponto_vendas.*','cidades.nome as cidade','estoque_pontovenda.id_pontovenda as pdv',DB::raw('SUM(estoque_pontovenda.estoque) as estoque'),'status.nome as status')->groupBy('ponto_vendas.id')->orderBy('status.id')->get();
 			//$pontosVenda = PontoVenda::where('user_id', $idUser)->join('cidades', 'ponto_vendas.cidade', '=', 'cidades.id')->join('status','ponto_vendas.status','=','status.id')->select('ponto_vendas.*','cidades.nome as cidade','status.nome as status')->get();
 			$produtos = Produto::join('estoque_repositor','produtos.id','=','estoque_repositor.id_produto')->where('estoque_repositor.id_user', $idUser)->select('produtos.*','estoque_repositor.estoque as estoque')->get();
 			return view('repositor.pontosdeVenda', ['id' => $idUser,'pontosvenda' => $pontosVenda,'produtos' => $produtos]);
@@ -49,8 +53,18 @@ class UserGetController extends Controller
 			$pontovendas = PontoVenda::where('user_id',$idUser)->where('status',1)->get();
 			//$pedidos = Pedido::join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->join('users','pedidos.id_repositor','=','users.id')->select('produtos.nome as produto','produtos.modelo as modelo','pedido_produtos.qtde as qtde','users.name as repositor','pedidos.*')->get();
 			//$pedidos = Pedido::join('users','pedidos.id_repositor','=','users.id')->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->select('pedido_produtos.qtde as qtde','pedido_produtos.id_pedido as id_pedido','users.name as repositor','pedidos.*')->groupBy('repositor')->pluck('repositor');;
-			$pedidos = Pedido::where('pedidos.id_repositor', $idUser)->join('users','pedidos.id_repositor','=','users.id')->join('ponto_vendas','pedidos.id_pdv','=','ponto_vendas.id')->leftJoin('nf','pedidos.id','=','nf.id_pedido')->select('users.name as repositor','pedidos.*','ponto_vendas.nome as ponto_venda','ponto_vendas.id as id_pontovenda','nf.status as nf')->groupBy('nf.id_pedido')->orderBy('pedidos.id')->get();
+			$pedidos = Pedido::where('pedidos.id_repositor', $idUser)->join('users','pedidos.id_repositor','=','users.id')->join('ponto_vendas','pedidos.id_pdv','=','ponto_vendas.id')->leftJoin('nf','pedidos.id','=','nf.id_pedido')->select('users.name as repositor','pedidos.*','ponto_vendas.nome as ponto_venda','ponto_vendas.id as id_pontovenda','nf.status as nf')->groupBy('pedidos.id')->orderBy('pedidos.id')->get();
+			$boleto = null;
+			foreach($pedidos as $pedido){
+			if($pedido->boleto != null || $pedido->boleto != ''){
+			$urlFatura =  "http://api.iugu.com/v1/invoices/".$pedido->boleto;
+			$iuguApi = apiIugu('GET', '', $urlFatura);
+			$boleto = json_decode($iuguApi);
+			$pedido->status = $boleto->status;
+		}
+		}
 			return view('repositor.pedidos',['produtos'=> $produtos, 'pedidos' => $pedidos, 'pontovendas' => $pontovendas]);
+		
 		}
 		
 		public function infopdv(Request $request, $idPdv)
@@ -71,13 +85,47 @@ class UserGetController extends Controller
 		$request->user()->authorizeRoles(['repositor']);
 		//$produtos = Produto::all();
 		//$pontovendas = PontoVenda::all();
-		$pedido = Pedido::where('pedidos.id', $idPedido)->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('users','pedidos.id_repositor','=','users.id')->join('ponto_vendas','pedidos.id_pdv','=','ponto_vendas.id')->select('pedido_produtos.qtde as qtde','users.name as repositor','pedidos.*','ponto_vendas.nome as ponto_venda')->first();
+		$pedido = Pedido::where('pedidos.id', $idPedido)->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('users','pedidos.id_repositor','=','users.id')->select('pedido_produtos.qtde as qtde','users.name as repositor','pedidos.*')->first();
 		$produtos = Pedido::where('pedidos.id', $idPedido)->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->select('produtos.nome as nome','produtos.modelo as modelo','produtos.codigo as codigo','pedido_produtos.qtde as qtde','produtos.preco as preco')->get();
 		//$pedido = Pedido::find($idPedido);
-		
-		return view('repositor.pedido.infopedido',[ 'pedido' => $pedido, 'produtos' => $produtos]);
+		$boleto = null;
+		if($pedido->boleto != null || $pedido->boleto != ''){
+		$urlFatura =  "http://api.iugu.com/v1/invoices/".$pedido->boleto;
+		$iuguApi = apiIugu('GET', '', $urlFatura);
+		$boleto = json_decode($iuguApi);
 		}
 		
+		return view('repositor.pedido.infopedido',[ 'pedido' => $pedido, 'produtos' => $produtos,'boleto' => $boleto]);
+		}
 		
+		public function dwdocumentos(Request $request,$opcao)
+		{
+			$request->user()->authorizeRoles(['repositor']);
+			if($opcao == 1){
+				return view('repositor.documentos');
+			}else{
+			switch($opcao){
+			case 2:
+			$file = public_path(). "/arquivos/briefing_zoop.xlsx";
+			break;
+			case 3:
+			$file = public_path(). "/arquivos/cadastro_info_pdv_zoop.docx";
+			break;
+			case 4:
+			$file = public_path(). "/arquivos/proposta_cliente_zoop.doc";
+			break;
+			}
+		    return response()->download($file);
+			}
+		}
+		
+		public function perfil(Request $request){
+		$request->user()->authorizeRoles(['repositor']);
+		$idUsuario = Auth::user()->id;
+		
+		$usuario = User::find($idUsuario);
+		
+		return view('repositor.perfil', ['usuario' => $usuario]);
+		}
 		
 }

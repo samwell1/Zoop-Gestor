@@ -79,6 +79,12 @@
 								<p>Estoque</p>
 							</a>
 						</li>
+						<li class="{{set_active('admin/documentos/1')}}">
+							<a href="{{ url('admin/documentos' ,'1') }}">
+								<i class="fa fa-download"></i>
+								<p>Documentos</p>
+							</a>
+						</li>
 					</ul>
 				</div>
 			</div>
@@ -122,7 +128,7 @@
 										
 									</a>
 									<ul class="dropdown-menu">
-										<li><a href="#">Perfil</a></li>
+										<li><a href="{{route('perfil')}}">Perfil</a></li>
 										<li><a href="{{ route('logout') }}"
 											onclick="event.preventDefault();
 										document.getElementById('logout-form').submit();">Sair</a></li>
@@ -226,7 +232,7 @@
 	<script src="{{ asset('js/material-dashboard.js') }}"></script>
 	
 	<!-- Demo -->
-	<script src="{{ asset('js/demo.js') }}"></script>
+	
 	
 		<script>
 function get_fb_complete(){

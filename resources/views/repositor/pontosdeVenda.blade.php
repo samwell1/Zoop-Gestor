@@ -244,7 +244,7 @@
 					</div>
 					
 					<div class="row">
-						<div class="col-md-4">
+						<div class="col-md-2">
 							<div class="form-group label">
 								<label class="control-label">UF</label>
 								<select id="uf" name="estado" class="uf form-control" required/></select>
@@ -257,9 +257,15 @@
 							</div>
 						</div>
 						<div class="col-md-4">
-							<div class="form-group label">
+							<div class="form-group label-floating">
 								<label class="control-label">Email</label>
 								<input type="text" name="email" class="form-control" required/>
+							</div>
+						</div>
+						<div class="col-md-2">
+							<div class="form-group label-floating">
+								<label class="control-label">Estoque Máximo</label>
+								<input type="number" class="form-control" name="estoque" required/>
 							</div>
 						</div>
 					</div>
@@ -278,7 +284,61 @@
 
 @section('post-script')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.11/jquery.mask.js"></script>
-<script src="/vendor/artesaos/cidades/js/scripts.js"></script>
+<script>(function ( $ ) {
+
+    $.fn.ufs = function(options) {
+
+        var select = $(this);
+
+        var settings = $.extend({
+            'default': select.attr('default'),
+            'onChange': function(uf){}
+        }, options );
+
+        $.get("{{url('')}}/uf", null, function (json) {
+
+            $.each(json, function (key, value) {
+                select.append('<option value="' + value.id + '" '+(settings.default==value.uf?'selected':'')+'>' + value.uf + '</option>');
+            })
+
+            settings.onChange(select.val());
+
+        }, 'json');
+
+        select.change(function(){
+            settings.onChange(select.val());
+        });
+    };
+
+
+    $.fn.cidades = function(options) {
+
+        var select = $(this);
+
+        var settings = $.extend({
+            'default': select.attr('default'),
+            'uf': null
+        }, options );
+
+        if(settings.uf == null)
+            console.warn('Nenhuma UF informada');
+        else{
+
+            select.html('<option>Carregando..</option>');
+
+            $.get("{{url('')}}/cidades/"+settings.uf, null, function (json) {
+                select.html('<option value="">Selecione</option>');
+
+                $.each(json, function (key, value) {
+                    select.append('<option value="' + value.id + '" '+((settings.default==value.id || settings.default==value.nome)?'selected':'')+'>' + value.nome + '</option>');
+                })
+
+            }, 'json');
+
+        }
+    };
+
+}( jQuery ));</script>
 
 <script>
 	$(document).ready(function(){
@@ -290,7 +350,7 @@
 		}
 		};
 		
-		$('.fone').mask(maskBehavior, options);
+		//$('.fone').mask(maskBehavior, options);
 		$('.cep').mask('00000-000');
 		//$('.cpf').mask('000.000.000-00', {reverse: true});
 		$('.cnpj').mask('00.000.000/0000-00', {reverse: true});

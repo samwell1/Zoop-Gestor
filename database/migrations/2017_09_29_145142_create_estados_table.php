@@ -1,22 +1,22 @@
 <?php
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateCidadesTable extends Migration {
-
+class CreateEstadosTable extends Migration
+{
     /**
      * Run the migrations.
      *
      * @return void
      */
-    public function up() {
-        Schema::create('cidades', function(Blueprint $table) {
+     public function up() {
+        Schema::create('estados', function(Blueprint $table) {
             $table->increments('id');
-			$table->integer('id_estado');
-			$table->string('ibge', 8);
-            $table->string('nome', 255);
-            
+			$table->string('nome');
+            $table->string('uf',2);
+            $table->string('codigo', 2);
         });
     }
 
@@ -26,7 +26,6 @@ class CreateCidadesTable extends Migration {
      * @return void
      */
     public function down() {
-        Schema::drop('cidades');
+        Schema::drop('estados');
     }
-
 }

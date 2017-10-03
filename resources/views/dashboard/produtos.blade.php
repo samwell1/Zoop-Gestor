@@ -108,7 +108,7 @@
 												<div class="col-md-5">
 													<div class="form-group is-empty is-fileinput">
 														
-														<input type="file" name="imagem" id="image">
+														<input type="file" name="imagem" class="image">
 														<div class="input-group">
 															<input type="text" readonly="" class="form-control" value="" placeholder="Selecione uma imagem">
 															<span class="input-group-btn input-group-sm">
@@ -122,7 +122,7 @@
 												<div class="col-md-3">
 													<div class="form-group">
 														<label class="control-label"></label>
-														<img src="{{$produto->imagem}}" id="preview" style="height:100px;width:auto;">
+														<img src="{{$produto->imagem}}" class="preview" style="height:100px;width:auto;">
 													</div>
 												</div>
 											</div>
@@ -210,7 +210,7 @@
 						<div class="col-md-5">
 							<div class="form-group is-empty is-fileinput">
 								
-								<input type="file" name="imagem" id="image">
+								<input type="file" name="imagem" class="image">
 								<div class="input-group">
 									<input type="text" readonly="" class="form-control" placeholder="Selecione uma imagem">
 									<span class="input-group-btn input-group-sm">
@@ -224,7 +224,7 @@
 						<div class="col-md-3">
 							<div class="form-group">
 								<label class="control-label"></label>
-								<img src="" id="preview" style="height:100px;width:auto;">
+								<img src="" class="preview" style="height:100px;width:auto!important;">
 							</div>
 						</div>
 					</div>
@@ -253,12 +253,12 @@
 	var reader = new FileReader();
 	
 	reader.onload = function (e) {
-	$('#preview').attr('src', e.target.result);
+	$('.preview').attr('src', e.target.result);
 	}
 	reader.readAsDataURL(input.files[0]);
 	}
 	}
-	$("#image").change(function(){
+	$('.image').change(function(){
 	readURL(this);
 	});
 	</script>

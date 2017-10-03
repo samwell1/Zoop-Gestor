@@ -16,6 +16,7 @@ class CreateNfTable extends Migration
         Schema::create('nf', function (Blueprint $table) {
             $table->increments('id');
 			$table->integer('id_pedido');
+			$table->integer('id_pdv');
 			$table->string('xmlAss');
 			$table->string('recibo');
 			$table->string('protocolo');
@@ -37,3 +38,4 @@ class CreateNfTable extends Migration
         Schema::dropIfExists('nf');
     }
 }
+

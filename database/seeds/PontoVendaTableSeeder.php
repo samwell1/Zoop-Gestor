@@ -13,15 +13,15 @@ class PontoVendaTableSeeder extends Seeder
     {
 			$pontoVenda = new PontoVenda();
 			$pontoVenda->nome = 'ContaFarma';
-			$pontoVenda->cnpj = '71558829000152';
+			$pontoVenda->cnpj = '71.558.829/0001-52';
 			$pontoVenda->endereco = 'Sete de Setembro';
 			$pontoVenda->numero = '3432';
 			$pontoVenda->regiao = 'Centro';
-			$pontoVenda->fone = '34320108';
-			$pontoVenda->cep = '80230090';
+			$pontoVenda->fone = '(41) 3432-0108';
+			$pontoVenda->cep = '80230-090';
 			$pontoVenda->email = 'contato@contafarma.com.br';
-			$pontoVenda->estado = 'PR';
-			$pontoVenda->cidade = 6015;
+			$pontoVenda->estado = 16;
+			$pontoVenda->cidade = 2878;
 			$pontoVenda->max_estoque = 50;
 			$pontoVenda->user_id = 2;
 			$pontoVenda->status = 1;

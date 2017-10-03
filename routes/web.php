@@ -20,6 +20,8 @@
 	
 	Route::get('/admin/home', 'GetsController@index')->name('home');
 	
+	Route::get('/admin/documentos/{opcao}', 'GetsController@dwdocumentos');
+	
 	Route::get('/admin/pontosvenda', 'GetsController@pontosdeVenda')->name('pontosvenda');
 	
 	Route::get('/admin/pdv/{id}', 'GetsController@infopdv');
@@ -34,11 +36,15 @@
 	
 	Route::get('/admin/pedido/{id}', 'GetsController@infopedido');
 	
+	Route::get('/admin/perfil', 'GetsController@perfil')->name('perfil');
+	
 	Route::get('/nf', 'GetsController@nf')->name('nf');
 	//Fim
 	
 	//Inicio GET's REPOSITOR
 	Route::get('/user/home', 'UserGetController@index')->name('user_home');
+	
+	Route::get('/user/documentos/{opcao}', 'UserGetController@dwdocumentos');
 	
 	Route::get('/user/pdv', 'UserGetController@pdv')->name('user_pdv');
 	
@@ -47,6 +53,8 @@
 	Route::get('/user/pedido/{id}', 'UserGetController@infopedido');
 	
 	Route::get('/user/pdv/{id}', 'UserGetController@infopdv');
+	
+	Route::get('/user/perfil', 'UserGetController@perfil')->name('user_perfil');
 	//Fim
 	
 	//Inicio CRUD Produto
@@ -75,6 +83,8 @@
 	Route::post('/cadastrar_pedido', 'PostsController@cadastrarPedido')->name('cadastrar_pedido');
 	
 	Route::post('/cadastrar_usuario', 'PostsController@cadastrarUsuario')->name('cadastrar_usuario');
+	
+	Route::post('/admin_editar_perfil', 'PostsController@admin_editar_perfil');
 	//Fim
 	
 	//Inicio POST's USER
@@ -84,7 +94,7 @@
 	
 	Route::post('/user/pedido/{id}/enviNfe', 'UserPostController@enviNfe');
 	
-	
+	Route::post('/user/pedido/{id}/emitBoleto', 'UserPostController@emitBoleto');
 	//Fim
 	
 	//Inicio Funcoes
@@ -92,12 +102,12 @@
 	//Fim
 	
 	//Inicio GET's JSON
-	Route::get('/ufs/', function($uf = null){
-		return response()->json(\Artesaos\Cidade::select('uf')->distinct('uf')->orderBy('uf')->get());
+	Route::get('/uf/', function($uf = null){
+		return response()->json(DB::table('estados')->orderBy('uf')->get());
 	});
 	
-	Route::get('/cidades/{uf}', function($uf = null){
-		return response()->json(\Artesaos\Cidade::where('uf', $uf)->orderBy('nome')->get());
+	Route::get('/cidades/{estado}', function($uf = null){
+		return response()->json(DB::table('cidades')->where('id_estado', $uf)->orderBy('nome')->get());
 	});
 	
 	Route::get('/tempo_agora', 'GetsController@tempo_agora')->name('tempo_agora');

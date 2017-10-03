@@ -23,7 +23,7 @@
 				$table->string('cep');
 				$table->string('fone');
 				$table->string('email');
-				$table->string('estado');
+				$table->integer('estado');
 				$table->integer('cidade');
 				$table->integer('max_estoque');
 				$table->string('ie')->nullable();

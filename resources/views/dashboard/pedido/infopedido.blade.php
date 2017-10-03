@@ -1,6 +1,7 @@
 @extends('layouts.master')
 
 @section('content')
+
 <div class="row">
 	<div class="col-md-12">
 	</div>
@@ -19,7 +20,7 @@
 						<th>Produto</th>
 						<th>Quantidade</th>
 						<th>Valor Unitário</th>
-						<th>Ações</th>
+						<th>Valor Total</th>
 					</thead>
 					<tbody>
 						@foreach($produtos as $produto)
@@ -28,14 +29,7 @@
 							<td>{{$produto->nome}} - {{$produto->modelo}}</td>
 							<td>{{$produto->qtde}}</td>
 							<td>{{formata_dinheiro($produto->preco)}}</td>
-							<td class="td-actions text-right">
-								<button type="button" rel="tooltip" title="Editar" class="btn btn-primary btn-simple btn-xs">
-									<i class="material-icons">edit</i>
-								</button>
-								<button type="button" rel="tooltip" title="Deletar" class="btn btn-danger btn-simple btn-xs delete">
-									<i class="material-icons">close</i>
-								</button>
-							</td>
+							<td><?php echo formata_dinheiro($produto->preco * $produto->qtde)?></td>
 						</tr>
 						@endforeach
 					</tbody>
@@ -45,13 +39,44 @@
 		</div>
 	</div>
 </div>
+@if($pedido->boleto == null || $pedido->boleto == '')
+<form action="{{ URL::to('user/pedido/' . $pedido->id.'/emitBoleto') }}" method="POST">
+	{{ csrf_field() }}
+	<input type="hidden" value="{{$pedido->id}}" name="idPedido">
+	<input type="hidden" value="{{$pedido->id_pdv}}" name="idPdv">
+<button type="submit" class="btn btn-success pull-right">
+	<i class="fa fa-plus"> </i> Emitir Boleto
+</button>
+</form>
+@endif
+
+@if($pedido->nf != null || $pedido->nf != '')
+<form action="{{ URL::to('user/pedido/' . $pedido->id.'/enviNfe') }}" method="POST">
+	{{ csrf_field() }}
+	<input type="hidden" value="{{$pedido->id}}" name="idPedido">
+	<input type="hidden" value="{{$pedido->id_pdv}}" name="idPdv">
+	<button type="submit" class="btn btn-info pull-right">
+		<i class="fa fa-plus"> </i> enviar Nota fiscal
+	</button>
+</form>
+
+@else
+<form action="{{ URL::to('user/pedido/' . $pedido->id.'/emitNfe') }}" method="POST">
+	{{ csrf_field() }}
+	<input type="hidden" value="{{$pedido->id}}" name="idPedido">
+	<input type="hidden" value="{{$pedido->id_pdv}}" name="idPdv">
+	<button type="submit" class="btn btn-info pull-right">
+		<i class="fa fa-plus"> </i> Emitir Nota fiscal
+	</button>
+</form>
+@endif
 
 @if($pedido->boleto != null || $pedido->boleto != '')
 <div class="row">
 	<div class="col-md-12">
 		<div class="card">
 			<div class="card-header" data-background-color="purple">
-				<h4 class="title">Status: <b>{{$boleto->status}}</b> | Data de Vencimento Boleto: <b> {{$boleto->due_date}}</b> </h4>
+				<h4 class="title">Status: <b>{{$boleto->status}}</b> | Data de Vencimento Boleto: <b> {{formata_data($boleto->due_date)}}</b> </h4>
 				<p class="category">Abaixo estão as ações do boleto</p>
 			</div>
 			<div class="card-content table-responsive">
@@ -62,13 +87,13 @@
 						<th>Notas</th>
 					</thead>
 					<tbody>
-					@foreach($boleto->logs as $logs)
+						@foreach($boleto->logs as $logs)
 						<tr>
 							<td>{{$logs->created_at}}</td>
 							<td>{{$logs->description}}</td>
 							<td>{{$logs->notes}}</td>
 						</tr>
-				@endforeach
+						@endforeach
 					</tbody>
 				</table>
 			</div>
@@ -77,14 +102,13 @@
 </div>
 @endif
 
-
 @endsection
 
 @section('post-script')
 <script>
 	$(".delete").on("submit", function(){
-		return confirm("Tem certeza que deseja deletar este item?");
+	return confirm("Tem certeza que deseja deletar este item?");
 	});
-</script>
-
-@endsection									
+	</script>
+	
+	@endsection										

@@ -61,6 +61,12 @@
 								<p>Pedidos</p>
 							</a>
 						</li>
+						<li class="{{set_active('user/documentos/1')}}">
+							<a href="{{ url('user/documentos' ,'1') }}">
+								<i class="fa fa-download"></i>
+								<p>Documentos</p>
+							</a>
+						</li>
 					</ul>
 				</div>
 			</div>
@@ -105,7 +111,7 @@
 										
 									</a>
 									<ul class="dropdown-menu">
-										<li><a href="#">Perfil</a></li>
+										<li><a href="{{route('user_perfil')}}">Perfil</a></li>
 										<li><a href="{{ route('logout') }}"
 											onclick="event.preventDefault();
 										document.getElementById('logout-form').submit();">Sair</a></li>
