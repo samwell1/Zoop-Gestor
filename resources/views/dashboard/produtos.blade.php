@@ -39,8 +39,8 @@
 						@endif
 						@foreach($produtos as $produto)
 						<tr>
-							<td><a href="#" data-toggle="modal" data-target="#photo{{$produto->id}}">
-								<img src="{{asset($produto->imagem)}}" style="height:12%;width:auto;">
+							<td><a href="{{asset($produto->imagem)}}" data-toggle="lightbox">
+								<img src="{{asset($produto->imagem)}}" class="img img-fluid" style="height:12%;width:auto;">
 							</a></td>
 							<td>{{$produto->codigo}}</td>
 							<td>{{$produto->nome}}</td>
@@ -241,6 +241,16 @@
 @endsection
 
 @section('post-script')
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.2.0/ekko-lightbox.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.2.0/ekko-lightbox.css"></link>
+
+<script>
+	$(document).on('click', '[data-toggle="lightbox"]', function(event) {
+		event.preventDefault();
+		$(this).ekkoLightbox({alwaysShowClose: true});
+	});
+</script>
 
 <script>
     $(".delete").on("submit", function(){

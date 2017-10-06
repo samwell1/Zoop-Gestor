@@ -29,6 +29,7 @@
 				$table->string('ie')->nullable();
 				$table->string('isuf')->nullable();
 				$table->string('im')->nullable();
+				$table->string('contrato')->nullable();
 				$table->integer('user_id');
 				$table->integer('status');
 				$table->timestamps();

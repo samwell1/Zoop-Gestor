@@ -137,14 +137,10 @@
 		public function infopdv(Request $request, $idPdv)
 		{
 		$request->user()->authorizeRoles(['admin']);
-		//$produtos = Produto::all();
-		//$pontovendas = PontoVenda::all();
 		$pontoVenda = PontoVenda::find($idPdv);
-		//$pedido = Pedido::where('pedidos.id', $idPedido)->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('users','pedidos.id_repositor','=','users.id')->join('ponto_vendas','pedidos.id_pdv','=','ponto_vendas.id')->select('pedido_produtos.qtde as qtde','users.name as repositor','pedidos.*','ponto_vendas.nome as ponto_venda')->first();
-		//$produtos = Pedido::where('pedidos.id', $idPedido)->join('pedido_produtos', 'pedidos.id','=','pedido_produtos.id_pedido')->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->select('produtos.nome as nome','produtos.modelo as modelo','produtos.codigo as codigo','pedido_produtos.qtde as qtde','produtos.preco as preco')->get();
-		//$pedido = Pedido::find($idPedido);
-		
-		return view('dashboard.pdv.infopdv',[ 'pontoVenda' => $pontoVenda,]);
+		//$pontoVenda = PontoVenda::find($idPdv)->leftJoin('imagens_pdv','ponto_vendas.id','=','imagens_pdv.id_pdv')->select('imagens_pdv.imagem as imagem','ponto_vendas.*')->first();
+		$imagens = DB::table('imagens_pdv')->where('id_pdv',$pontoVenda->id)->select('imagens_pdv.imagem as imagem')->get();
+		return view('dashboard.pdv.infopdv',[ 'pontoVenda' => $pontoVenda,'imagens' => $imagens]);
 		}
 		
 		public function infopedido(Request $request, $idPedido)
@@ -180,7 +176,7 @@
 			$file = public_path(). "/arquivos/cadastro_info_pdv_zoop.docx";
 			break;
 			case 4:
-			$file = public_path(). "/arquivos/proposta_cliente_zoop.doc";
+			$file = public_path(). "/arquivos/proposta_cliente_zoop.docx";
 			break;
 			}
 		    return response()->download($file);
@@ -191,5 +187,28 @@
 			return Date('d/m/Y - H:i');
 		}
 		
+		public function retornar()
+		{
+		if(Auth::user()->roles->first()->name == 'admin')
+		{
+			return redirect()->route('home');
+		}else if(Auth::user()->roles->first()->name == 'repositor')
+		{
+			return redirect()->route('user_home');
+		}
+		}
+		
+		public function download(Request $request,$caminho1)
+		{
+				$request->user()->authorizeRoles(['admin']);
+				$pdv = PontoVenda::find(1);
+				
+				$file = Storage::get($pdv->contrato);
+			//	if($file == null)
+				//$file = $caminho1.'/'.$caminho2.'/'.$caminho3.'/'.$arquivo;
+			//echo $file;
+				return response()->download($file);
+				
+		}
 		}
 				

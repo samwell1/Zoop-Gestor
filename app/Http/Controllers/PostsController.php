@@ -4,6 +4,7 @@
 	
 	use Illuminate\Http\Request;
 	use Illuminate\Support\Facades\DB;
+	use Illuminate\Support\Facades\Storage;
 	use Validator;
 	use App\Role;
 	use App\Produto;
@@ -102,6 +103,7 @@
 		{	
 			$request->user()->authorizeRoles(['admin']);
 			$idUser = $request->user()->id;
+			$retorno = false;
 			
 			$pontoVenda = new PontoVenda();
 			$pontoVenda->nome = $request['nome'];
@@ -117,8 +119,29 @@
 			$pontoVenda->max_estoque = $request['estoque'];
 			$pontoVenda->user_id = $idUser;
 			$pontoVenda->status = 2;
-			$pontoVenda->save();
+			if($pontoVenda->save())
+				$retorno = true;
 			
+			$contador = 0;
+			if(count($request['imagem']) != null || count($request['imagem'] != '')){
+			foreach($request['imagem'] as $imagem) 
+			{
+			$contador++;
+			
+			$imageName = 'imagem'.$contador.'.'.$imagem->getClientOriginalExtension();
+			$caminho = public_path('uploads/pdvs/imagens/'.$pontoVenda->id);
+			$imagem->move(($caminho), $imageName);
+			$imagemFinal = 'uploads/pdvs/imagens/'.$pontoVenda->id.'/'.$imageName;
+			//$usuario->imagem = $request['imagem'];
+			DB::table('imagens_pdv')->insert(['id_pdv' => $pontoVenda->id , 'imagem' => $imagemFinal]);
+			$retorno = true;
+			}
+			}
+			
+			if($retorno == true)
+				return redirect('admin/pontosvenda')->with('status', 'Cadastrado com sucesso!');
+			else
+				return redirect('admin/pontosvenda')->with('error', 'Erro!');
 			//Retira caracteres especiais
 			/*$telMask = array("(","-",")");
 			$cnpjMask = array("/","-",".");
@@ -140,12 +163,7 @@
 			$pontoVenda->cidade = $request['cidade'];
 			$pontoVenda->user_id = $idUser*/
 			
-			if($pontoVenda->save())
-			{
-				return redirect('user/pdv')->with('status', 'Cadastrado com sucesso!');
-			}
-			else
-				return redirect('user/pdv')->with('error', 'Erro!');
+		
 
 		}
 		
@@ -337,6 +355,76 @@
 				$user->roles ()->attach ( Role::where ( 'name', 'repositor' )->first () );
 			}
 			return redirect('admin/usuarios')->with('status', 'Usuário alterado com sucesso!');
+		}
+		
+		public function trocar_imagem_perfil(Request $request)
+		{
+			$request->user()->authorizeRoles(['repositor','admin']);
+			$usuario = User::find($request['idUser']);
+			$retorno = false;
+			
+			if($request->imagem != null ||$request->imagem != ''){
+			$imageName = 'fotoPerfil.'.$request->imagem->getClientOriginalExtension();
+			$caminho = public_path('uploads/users/'.$usuario->id);
+			$request->imagem->move(($caminho), $imageName);
+			$usuario->imagem = 'uploads/users/'.$usuario->id.'/'.$imageName;
+			//$usuario->imagem = $request['imagem'];
+			$usuario->save();
+			$retorno = true;
+			}
+			
+			if($retorno == true){
+			return redirect()->back()->with('status', 'Perfil editado com sucesso!');
+			}else{
+			return redirect()->back()->with('error', 'Senha atual incorreta!');
+			}
+		}
+		
+		public function documentoPdv(Request $request)
+		{
+			$request->user()->authorizeRoles('admin');
+			$pontoVenda = PontoVenda::find($request['idPdv']);
+			
+			$arquivoName = 'contrato.'.$request->arquivo->getClientOriginalExtension();
+			$caminho = 'pdvs/'.$pontoVenda->nome.'/documentos/';
+			$url = 'pdvs/'.$pontoVenda->nome.'/documentos/'.$arquivoName;
+			
+			Storage::putFileAs($caminho, $request->arquivo, $arquivoName);
+			$pontoVenda->contrato = $url;
+			$pontoVenda->status = 1;
+			if($pontoVenda->save()){
+				return redirect()->back()->with('status', 'Documento enviado com sucesso!');
+			}else{
+				return redirect()->back()->with('error', 'Error!');
+			}
+			
+		}
+		
+		public function add_imagem_pdv(Request $request)
+		{
+			$request->user()->authorizeRoles('admin');
+			$pontoVenda = PontoVenda::find($request['idPdv']);
+			$retorno = false;
+			$contador = 0;
+			if(count($request['imagem']) != null || count($request['imagem'] != '')){
+			foreach($request['imagem'] as $imagem) 
+			{
+			$contador++;
+			
+			$imageName = $imagem->getClientOriginalName().'.'.$imagem->getClientOriginalExtension();
+			$caminho = public_path('uploads/pdvs/imagens/'.$pontoVenda->id);
+			$imagem->move(($caminho), $imageName);
+			$imagemFinal = 'uploads/pdvs/imagens/'.$pontoVenda->id.'/'.$imageName;
+			//$usuario->imagem = $request['imagem'];
+			DB::table('imagens_pdv')->insert(['id_pdv' => $pontoVenda->id , 'imagem' => $imagemFinal]);
+			$retorno = true;
+			}
+			}
+			
+			if($retorno == true)
+				return redirect()->back()->with('status','Imagens adicionadas com sucesso!');
+			else
+				return redirect()->back()->with('error','Error!');
 		}
 		
 	}

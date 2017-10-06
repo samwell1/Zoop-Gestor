@@ -154,7 +154,7 @@
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 				<h4 class="modal-title" id="myModalLabel">Cadastrar Ponto de Venda</h4>
 			</div>
-			<form action="{{route('cadastrar-pdv')}}" id="upload" method="POST">
+			<form action="{{route('cadastrar-pdv')}}" id="upload" method="POST" enctype="multipart/form-data">
 				{{ csrf_field() }}
 				<div class="modal-body">
 					<div class="row">
@@ -207,7 +207,7 @@
 					</div>
 					
 					<div class="row">
-						<div class="col-md-4">
+						<div class="col-md-2">
 							<div class="form-group label">
 								<label class="control-label">UF</label>
 								<select id="uf" name="estado" class="uf form-control" required/></select>
@@ -220,12 +220,40 @@
 							</div>
 						</div>
 						<div class="col-md-4">
-							<div class="form-group label">
+							<div class="form-group label-floating">
 								<label class="control-label">Email</label>
 								<input type="text" name="email" class="form-control" required/>
 							</div>
 						</div>
+						<div class="col-md-2">
+							<div class="form-group label-floating">
+								<label class="control-label">Estoque Máximo</label>
+								<input type="number" class="form-control" name="estoque" required/>
+							</div>
+						</div>
 					</div>
+					<div class="row">
+												<div class="col-md-6">
+													<div class="form-group is-empty is-fileinput">
+														
+														<input type="file" name="imagem[]" class="image" multiple>
+														<div class="input-group">
+															<input type="text" readonly="" class="form-control" value="" placeholder="Selecione uma imagem" >
+															<span class="input-group-btn input-group-sm">
+																<button type="button" class="btn btn-fab btn-fab-mini">
+																	<i class="fa fa-file-image-o"></i>
+																</button>
+															</span>
+														</div>
+													</div>
+												</div>
+												<div class="col-md-6">
+													<div class="form-group">
+														<label class="control-label"></label>
+														<img src="" class="preview" style="height:100px;width:auto;">
+													</div>
+												</div>
+											</div>
 					<div class="clearfix"></div>
 				</div>
 				<div class="modal-footer">

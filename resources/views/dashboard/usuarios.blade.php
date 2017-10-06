@@ -39,6 +39,7 @@
 					<div class="tab-pane active" id="info">
 						<table class="table">
 							<thead class="text-primary">
+								<th>Imagem</th>
 								<th>Nome</th>
 								<th>Email</th>
 								<th>Ações</th>
@@ -54,31 +55,43 @@
 								@endif
 								@foreach($usuarios as $usuario)
 								<tr>
-									<td>{{$usuario->name}}</td>
-									<td>{{$usuario->email}}</td>
-									<td class="td-actions text-right">
-									<button type="button" rel="tooltip" title="Ver" class="btn btn-info btn-simple btn-xs" data-toggle="modal" data-target="#modal{{$usuario->id}}"> 
-									<i class="fa fa-eye"></i>
-								</button>
-										<button type="button" rel="tooltip" title="Editar" class="btn btn-primary btn-simple btn-xs" data-toggle="modal" data-target="#editar{{$usuario->id}}">
-											<i class="material-icons">edit</i>
-										</button>
-										<form action="{{route('deletar_produto')}}" method="POST">
-											{{ csrf_field() }}
-											<input type="hidden" value="{{$usuario->id}}" name="idprod">
-											<button type="submit" rel="tooltip" title="Deletar" class="btn btn-danger btn-simple btn-xs delete">
-												<i class="material-icons">close</i>
-											</button>
-										</form>
-									</td>
-								</tr>
-								<!-- editar -->
-								<div class="modal fade" id="editar{{$usuario->id}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-									<div class="modal-dialog" role="document">
-										<div class="modal-content">
-											<div class="modal-header">
-												<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-												<h4 class="modal-title" id="myModalLabel">Editar produto</h4>
+									@if($usuario->imagem != null)
+										<td style=" width:10%;max-width:100%;">
+									<a href="{{asset($usuario->imagem)}}" data-toggle="lightbox" class="visualizar">
+										<img src="{{asset($usuario->imagem)}}" class="img preview img-fluid" style="height:auto;width:50%;">
+										</td>
+										@else
+											<td>
+										<a href="http://www.mvsevm.it/ContentsFiles/anonimo.jpg" data-toggle="lightbox" class="visualizar">
+											<img src="http://www.mvsevm.it/ContentsFiles/anonimo.jpg" class="img preview img-fluid" style="height:auto;width:50%;">
+											</td>
+											@endif
+											
+											<td>{{$usuario->name}}</td>
+											<td>{{$usuario->email}}</td>
+											<td class="td-actions text-right">
+												<button type="button" rel="tooltip" title="Ver" class="btn btn-info btn-simple btn-xs" data-toggle="modal" data-target="#modal{{$usuario->id}}"> 
+													<i class="fa fa-eye"></i>
+												</button>
+												<button type="button" rel="tooltip" title="Editar" class="btn btn-primary btn-simple btn-xs" data-toggle="modal" data-target="#editar{{$usuario->id}}">
+													<i class="material-icons">edit</i>
+												</button>
+												<form action="{{route('deletar_produto')}}" method="POST">
+													{{ csrf_field() }}
+													<input type="hidden" value="{{$usuario->id}}" name="idprod">
+													<button type="submit" rel="tooltip" title="Deletar" class="btn btn-danger btn-simple btn-xs delete">
+														<i class="material-icons">close</i>
+													</button>
+												</form>
+											</td>
+										</tr>
+										<!-- editar -->
+										<div class="modal fade" id="editar{{$usuario->id}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+											<div class="modal-dialog" role="document">
+												<div class="modal-content">
+													<div class="modal-header">
+													<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+													<h4 class="modal-title" id="myModalLabel">Editar produto</h4>
 											</div>
 											<form enctype="multipart/form-data" action="{{route('editar_produto')}}"method="POST">
 												{{ csrf_field() }}
@@ -115,46 +128,46 @@
 									</div>
 								</div>
 								<!-- Estoque -->
-						<div class="modal fade" id="modal{{$usuario->id}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-							<div class="modal-dialog" role="document">
-								<div class="modal-content">
-									<div class="modal-header">
-										<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-										<h4 class="modal-title" id="myModalLabel">Abastecer estoque</h4>
-									</div>
-									<form action="{{route('estoque_repositor')}}" method="POST">
-										{{ csrf_field() }}
-										<input type="hidden" name="idUser" value="{{$usuario->id}}">
-										<div class="modal-body">
-											<div class="row">
-												<div class="col-md-6">
-													<div class="form-group label-floating">
-														<label class="control-label">Produto</label>
-														<select name="produto" class="form-control">
-															@foreach($produtos as $produto)
-															<option value="{{$produto->id}}">{{$produto->nome}} - {{$produto->modelo}} | <b>Estoque: {{$produto->quantidade}}</b></option>
-															@endforeach
-														</select>
-													</div>
-												</div>
-												<div class="col-md-6">
-													<div class="form-group label-floating">
-														<label class="control-label">Quantidade</label>
-														<input type="number" name="quantidade" class="form-control" >
-													</div>
-												</div>
+								<div class="modal fade" id="modal{{$usuario->id}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+									<div class="modal-dialog" role="document">
+										<div class="modal-content">
+											<div class="modal-header">
+												<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+												<h4 class="modal-title" id="myModalLabel">Abastecer estoque</h4>
 											</div>
-											<div class="clearfix"></div>
+											<form action="{{route('estoque_repositor')}}" method="POST">
+												{{ csrf_field() }}
+												<input type="hidden" name="idUser" value="{{$usuario->id}}">
+												<div class="modal-body">
+													<div class="row">
+														<div class="col-md-6">
+															<div class="form-group label-floating">
+																<label class="control-label">Produto</label>
+																<select name="produto" class="form-control">
+																	@foreach($produtos as $produto)
+																	<option value="{{$produto->id}}">{{$produto->nome}} - {{$produto->modelo}} | <b>Estoque: {{$produto->quantidade}}</b></option>
+																	@endforeach
+																</select>
+															</div>
+														</div>
+														<div class="col-md-6">
+															<div class="form-group label-floating">
+																<label class="control-label">Quantidade</label>
+																<input type="number" name="quantidade" class="form-control" >
+															</div>
+														</div>
+													</div>
+													<div class="clearfix"></div>
+												</div>
+												<div class="modal-footer">
+													<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+													<button type="submit" class="btn btn-primary">Cadastrar</button>
+												</div>
+											</form>
 										</div>
-										<div class="modal-footer">
-											<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
-											<button type="submit" class="btn btn-primary">Cadastrar</button>
-										</div>
-									</form>
+									</div>
 								</div>
-							</div>
-						</div>
-						
+								
 								@endforeach
 							</tbody>
 						</table>
@@ -236,7 +249,7 @@
 								<input type="password" name="password" class="form-control" required/>
 							</div>
 						</div>
-							</div>
+					</div>
 					<div class="row">
 						<div class="col-md-12">
 							<div class="form-group label-floating">
@@ -244,38 +257,48 @@
 								<input type="password" name="password_confirmation" class="form-control" required/>
 							</div>
 						</div>
-							</div>
-							<div class="clearfix"></div>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
-							<button type="submit" class="btn btn-primary">Cadastrar</button>
-						</div>
-					</form>
+					</div>
+					<div class="clearfix"></div>
 				</div>
-			</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+					<button type="submit" class="btn btn-primary">Cadastrar</button>
+				</div>
+			</form>
 		</div>
-		@endsection
-		
-		@section('post-script')
+	</div>
+</div>
+@endsection
+
+@section('post-script')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.2.0/ekko-lightbox.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.2.0/ekko-lightbox.css"></link>
+
 <script>
-		$(".delete").on("submit", function(){
-			return confirm("Tem certeza que deseja deletar este item?");
-		});
-	</script>
-	<script>
-		function readURL(input) {
-			if (input.files && input.files[0]) {
-				var reader = new FileReader();
-				
-				reader.onload = function (e) {
-					$('#preview').attr('src', e.target.result);
-				}
-				reader.readAsDataURL(input.files[0]);
+	$(document).on('click', '[data-toggle="lightbox"]', function(event) {
+		event.preventDefault();
+		$(this).ekkoLightbox({alwaysShowClose: true});
+	});
+</script>
+
+<script>
+	$(".delete").on("submit", function(){
+		return confirm("Tem certeza que deseja deletar este item?");
+	});
+</script>
+<script>
+	function readURL(input) {
+		if (input.files && input.files[0]) {
+			var reader = new FileReader();
+			
+			reader.onload = function (e) {
+				$('#preview').attr('src', e.target.result);
 			}
+			reader.readAsDataURL(input.files[0]);
 		}
-		$("#image").change(function(){
-			readURL(this);
-		});
-	</script>
-	@endsection						
+	}
+	$("#image").change(function(){
+		readURL(this);
+	});
+</script>
+@endsection						

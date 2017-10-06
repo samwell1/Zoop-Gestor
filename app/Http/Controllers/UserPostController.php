@@ -8,7 +8,8 @@ use Illuminate\Http\Request;
 use App\PontoVenda;
 use App\Pedido;
 use App\Produtos;
-
+use App\User;
+use Hash;
 
 class UserPostController extends Controller
 {
@@ -272,5 +273,7 @@ class UserPostController extends Controller
 			}
 			
 		}
+		
+		
 		
 }
