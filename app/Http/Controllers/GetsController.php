@@ -20,7 +20,8 @@
 	use NFePHP\NFe\Make;
 	use NFePHP\DA\NFe\Danfe;
 	
-	
+	use App\Mail\NFe;
+	use Mail;
 	use Iugu\iugu\lib;
 	
 	class GetsController extends Controller
@@ -43,24 +44,32 @@
 		
 		public function nf(Request $request)
 		{
-	//GET
-	$urlPgDireto = "http://api.iugu.com/v1/charge";
-	$urlConsFatura = "http://api.iugu.com/v1/invoices/3755C6F80B4F4C2888FA8C6E4416DFCB";
-	$urlTodasFatura =  "http://api.iugu.com/v1/invoices/";
-	
-	//POST
-	$dadosFatura = Array('email' => 'wellerso@hotmail.com','due_date'=>'2017-09-29','payer' => Array(
-	'cpf_cnpj' => '25182254000107','name' => 'Wellerson Samuel','phone_prefix' => '41','phone' => '96969696','email' => 'wellerson@hotmail.com', 'address' => Array(
-	'zip_code' => '80230090', 'city' => 'CURITIBA', 'state' => 'PR', 'street' => 'AV.Brasil','number' => '3432','district' => 'Centro', 'country' => 'Brasil', 'complement' => 'Casa')
-	),'payable_with' => 'bank_slip', 'items[]' => Array('name' => 'Zoop', 'description' => 'zoop', 'quantity' => '10','price_cents' => '400'));
-	
-	//$iuguApi = apiIugu('GET','',$urlConsFatura);
-	//$retorno = json_decode($iuguApi);
-	//echo $retorno->due_date.' - '.$retorno->id;
-	$idPedido = 1;
-		$produtos = DB::table('pedido_produtos')->where('pedido_produtos.id_pedido', $idPedido)->join('produtos', 'pedido_produtos.id_produto','=','produtos.id')->select('produtos.nome as nome','produtos.modelo as modelo','produtos.codigo as codigo','pedido_produtos.qtde as qtde','produtos.id as id_produto','produtos.preco as preco','pedido_produtos.id_produto as id_prod_ped','produtos.peso as peso')->get();
-		foreach($produtos as $produto)
-		echo $produto->nome.'<br>';
+		
+		$texto = 'Aqui está sua nota fiscal';
+		$xml = Storage::get('nf/nf.xml');
+		$pdf = Storage::get('nf/danfe.pdf');
+		$order = ['xml' => $xml,'pdf' =>$pdf,'texto' => $texto];
+		
+		Mail::to('wellerso@hotmail.com')
+		->send(new NFe($order));
+		
+		
+		/*$config->mail->host = ['zeus.hostsrv.org'];
+		$config->mail->user = 'contato@zoopbr.com.br';
+		$config->mail->password = 'grupoopen###***';
+		$config->mail->secure = 'tls';
+		$config->mail->port = 465;
+		$config->mail->from = 'contato@zoopbr.com.br';
+		$config->mail->fantasy = 'Contato ZoopBR';
+		$config->mail->replyTo = 'contato@zoopbr.com.br';
+		$config->mail->replyName = 'Contato';*/
+
+		//$addresses = ['wellerso@hotmail.com'];
+		
+		//$xml = Storage::get('nf/nf.xml');
+		//$resp = Mail::sendMail($config, $xml, '', $addresses, '');
+		
+		
 		}
 		
 		public function usuarios(Request $request)

@@ -16,7 +16,7 @@
 			Schema::create('ponto_vendas', function (Blueprint $table) {
 				$table->increments('id');
 				$table->string('nome');
-				$table->string('cnpj');
+				$table->string('cnpj')->unique();
 				$table->string('endereco');
 				$table->string('numero');
 				$table->string('regiao');
